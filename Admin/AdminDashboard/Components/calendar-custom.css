@@ -1,0 +1,35 @@
+/* calendar-custom.css */
+.react-calendar {
+  background-color: var(--bg-sub-dark);
+  color: var(--text-white);
+  border: none;
+  width: 100%;
+}
+.react-calendar__tile {
+  background: transparent;
+  color: var(--text-white);
+  border-radius: 8px;
+  padding: 10px;
+}
+.react-calendar__tile--active {
+  background: var(--border-accent);
+  color: var(--text-white);
+}
+.react-calendar__tile--now {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+}
+.react-calendar__tile:hover {
+  background: rgba(106, 27, 154, 0.2); /* Uses --border-accent (#6A1B9A) with opacity */
+}
+/* Highlight days with events */
+.react-calendar__tile.event-day {
+  background: var(--border-accent);
+  color: var(--text-white);
+  border-radius: 8px;
+}
+
+/* Improve hover effect if already highlighted */
+.react-calendar__tile.event-day:hover {
+  background: rgba(106, 27, 154, 0.8); /* Slightly lighter on hover */
+}
