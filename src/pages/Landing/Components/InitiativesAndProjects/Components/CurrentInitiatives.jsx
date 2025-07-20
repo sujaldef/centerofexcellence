@@ -78,7 +78,7 @@ const CurrentInitiatives = memo(() => {
       letters,
       { color: "#ffffff" },
       {
-        color: "#9333ea",
+        color: "#4A148C",
         scrollTrigger: {
           trigger: container,
           start: "top top",
@@ -116,12 +116,12 @@ const CurrentInitiatives = memo(() => {
   return (
     <section
       ref={containerRef}
-      className="relative w-full min-h-screen sm:h-screen overflow-hidden overflow-x-hidden bg-[#0a0a1a] text-white"
+      className="relative w-full min-h-screen sm:h-screen overflow-hidden overflow-x-hidden bg-dark text-white"
     >
       {/* Fixed Sidebar */}
       <div
         ref={sidebarRef}
-        className="absolute left-0 top-0 h-full w-[350px] sm:w-[470px] bg-[#0a0a1a] z-20 flex justify-center items-center"
+        className="absolute left-0 top-0 h-full w-[350px] sm:w-[470px] bg-dark z-20 flex justify-center items-center"
       >
         <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-center leading-tight ml-9">
           {wrapLetters("Our Current Initiatives")}

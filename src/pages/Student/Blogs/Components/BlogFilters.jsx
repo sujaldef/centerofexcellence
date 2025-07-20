@@ -1,5 +1,7 @@
 import React from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiEye } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+
 
 const BlogFilters = ({ searchQuery, setSearchQuery, categoryFilter, setCategoryFilter, sortBy, setSortBy }) => {
   return (
@@ -16,6 +18,12 @@ const BlogFilters = ({ searchQuery, setSearchQuery, categoryFilter, setCategoryF
         />
       </div>
       <div className="flex gap-4 w-full sm:w-auto">
+       <Link
+          to={`/Student/StudentNewBlog`}
+          className="btn-primary flex items-center justify-center gap-2 mt-2"
+        >
+           Create a blog
+        </Link>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}

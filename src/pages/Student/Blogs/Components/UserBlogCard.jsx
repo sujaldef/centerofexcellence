@@ -25,7 +25,7 @@ const UserBlogCard = ({ id, image, title, description, author, category }) => {
           <p className="text-small text-gray mt-1">By {author}</p>
         </div>
         <Link
-          to={`/student/blogs/details/${id}`}
+          to={`/PublicBlogs/${id}`}
           className="btn-primary flex items-center justify-center gap-2 mt-2"
         >
           <FiEye /> View Details

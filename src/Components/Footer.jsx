@@ -123,7 +123,7 @@ const Footer = () => {
             />
             <button
               type="submit"
-              className="btn-primary px-4 py-2 w-full sm:w-auto"
+              className="bg-[#8D4EF7] hover:bg-[#a570ff] rounded-full px-4 py-2 w-full sm:w-auto"
               aria-label="Subscribe to newsletter"
               disabled={status === "loading"}
             >

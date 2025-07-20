@@ -15,10 +15,10 @@ const QuickActions = ({ selectedFilter, setSelectedFilter }) => {
         <button
           key={filter.value}
           onClick={() => setSelectedFilter(filter.value)}
-          className={`btn-primary text-small ${
+          className={`btn-secondary text-small ${
             selectedFilter === filter.value
-              ? 'bg-[var(--primary-color)]'
-              : 'bg-[var(--border-accent)]'
+              ? 'btn-primary'
+              : 'bg-secondary'
           }`}
           aria-label={`Filter by ${filter.label} events`}
         >

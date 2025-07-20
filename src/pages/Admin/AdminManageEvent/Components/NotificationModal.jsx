@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BsTextLeft, BsImage } from 'react-icons/bs';
 
-const NotificationModal = ({ isNotificationModalOpen, setIsNotificationModalOpen, handlePostNotification }) => {
+const NotificationModal = ({ isOpen, onClose, onSubmit }) => {
   const [notificationType, setNotificationType] = useState('text');
   const [notificationMessage, setNotificationMessage] = useState('');
   const [posterFile, setPosterFile] = useState(null);
@@ -14,6 +14,7 @@ const NotificationModal = ({ isNotificationModalOpen, setIsNotificationModalOpen
       setError('');
     } else {
       setError('Please upload a valid image file.');
+      setPosterFile(null);
     }
   };
 
@@ -27,21 +28,25 @@ const NotificationModal = ({ isNotificationModalOpen, setIsNotificationModalOpen
       return;
     }
 
-    handlePostNotification({
+    const notificationData = {
       message: notificationMessage,
-      poster: posterFile,
+      poster: posterFile, // Send File object for FormData handling in thunk
       type: notificationType,
-    });
+    };
+
+    console.log('Submitting notification:', notificationData);
+    onSubmit(notificationData);
+
     setNotificationMessage('');
     setPosterFile(null);
-    setIsNotificationModalOpen(false);
+    setNotificationType('text');
     setError('');
-    console.log('Notification posted');
+    onClose();
   };
 
   return (
     <>
-      {isNotificationModalOpen && (
+      {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300">
           <div className="bg-dark p-6 rounded-xl shadow-xl max-w-3xl w-full card">
             <h2 className="text-2xl font-semibold text-white mb-6">Post New Notification</h2>
@@ -112,13 +117,7 @@ const NotificationModal = ({ isNotificationModalOpen, setIsNotificationModalOpen
 
             <div className="flex justify-end gap-4 mt-6">
               <button
-                onClick={() => {
-                  setIsNotificationModalOpen(false);
-                  setNotificationMessage('');
-                  setPosterFile(null);
-                  setError('');
-                  console.log('Notification modal closed');
-                }}
+                onClick={onClose}
                 className="btn-secondary"
               >
                 Cancel

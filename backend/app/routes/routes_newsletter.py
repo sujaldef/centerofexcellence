@@ -14,6 +14,12 @@ class SubscribeResponse(BaseModel):
 async def subscribe(subscription: NewsletterSubscription):
     """Subscribe a user to the newsletter by email."""
     try:
+        # Explicitly check for empty email (optional, since Pydantic handles this)
+        if not subscription.email or not subscription.email.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email address cannot be empty"
+            )
         result = await subscribe_user(subscription.email)
         return result
     except ValueError as ve:

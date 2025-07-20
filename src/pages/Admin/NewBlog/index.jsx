@@ -9,7 +9,7 @@ const NewBlog = () => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     title: '',
-    authorType: 'user',
+    authorType: 'admin',
     authorId: '', // Assume this is set by auth context
     authorName: '',
     authorProfilePic: '',

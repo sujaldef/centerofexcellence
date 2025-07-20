@@ -1,15 +1,8 @@
+// EventCountdown.jsx
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 
-// Constant for countdown data
-const COUNTDOWN_DATA = {
-  eventDate: '2025-04-27T00:00:00',
-  dateLabel: 'April 25–27, 2025',
-  venue: 'Hilton Conference Center',
-};
-
-// Utility function to calculate countdown
 const calculateCountdown = (targetDate) => {
   const now = new Date().getTime();
   const distance = targetDate - now;
@@ -26,25 +19,18 @@ const calculateCountdown = (targetDate) => {
   return { days, hours, minutes, seconds, expired: false };
 };
 
-const EventCountdown = ({ countdownData = COUNTDOWN_DATA }) => {
+const EventCountdown = ({ countdownData }) => {
   const targetDate = new Date(countdownData.eventDate).getTime();
   const [countdown, setCountdown] = useState(calculateCountdown(targetDate));
 
-  // Validate date
   const isValidDate = !isNaN(targetDate);
 
   useEffect(() => {
     if (!isValidDate) return;
 
-    // Log target date for debugging (remove in production)
-    console.log('Target Date:', new Date(targetDate).toISOString());
-
     const interval = setInterval(() => {
       const newCountdown = calculateCountdown(targetDate);
       setCountdown(newCountdown);
-
-      // Log countdown values for debugging (remove in production)
-      console.log('Countdown:', newCountdown);
 
       if (newCountdown.expired) {
         clearInterval(interval);
@@ -70,7 +56,6 @@ const EventCountdown = ({ countdownData = COUNTDOWN_DATA }) => {
           </p>
         ) : (
           <>
-            {/* Info Cards */}
             {(countdownData.dateLabel || countdownData.venue) && (
               <div className="flex flex-col md:flex-row gap-4">
                 {countdownData.dateLabel && (
@@ -107,33 +92,30 @@ const EventCountdown = ({ countdownData = COUNTDOWN_DATA }) => {
                     </div>
                   </div>
                 )}
-                 <div
-              className="flex gap-4 bg-[#000000] border border-gray-700/20 px-6 py-4 rounded-lg shadow-lg backdrop-blur-md"
-              role="timer"
-              aria-live="polite"
-              aria-label={`Countdown to event: ${countdown.days} days, ${countdown.hours} hours, ${countdown.minutes} minutes, ${countdown.seconds} seconds`}
-            >
-              {[
-                { label: 'Days', value: countdown.days },
-                { label: 'Hours', value: countdown.hours },
-                { label: 'Minutes', value: countdown.minutes },
-                { label: 'Seconds', value: countdown.seconds },
-              ].map((item, idx) => (
-                <div key={idx} className="flex flex-col items-center min-w-[60px]">
-                  <span className="text-2xl sm:text-3xl font-bold text-gray-100 drop-shadow-sm">
-                    {item.value.toString().padStart(2, '0')}
-                  </span>
-                  <span className="text-xs uppercase tracking-wider text-gray-400 font-medium mt-1">
-                    {item.label}
-                  </span>
+                <div
+                  className="flex gap-4 bg-[#000000] border border-gray-700/20 px-6 py-4 rounded-lg shadow-lg backdrop-blur-md"
+                  role="timer"
+                  aria-live="polite"
+                  aria-label={`Countdown to event: ${countdown.days} days, ${countdown.hours} hours, ${countdown.minutes} minutes, ${countdown.seconds} seconds`}
+                >
+                  {[
+                    { label: 'Days', value: countdown.days },
+                    { label: 'Hours', value: countdown.hours },
+                    { label: 'Minutes', value: countdown.minutes },
+                    { label: 'Seconds', value: countdown.seconds },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex flex-col items-center min-w-[60px]">
+                      <span className="text-2xl sm:text-3xl font-bold text-gray-100 drop-shadow-sm">
+                        {item.value.toString().padStart(2, '0')}
+                      </span>
+                      <span className="text-xs uppercase tracking-wider text-gray-400 font-medium mt-1">
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
               </div>
             )}
-
-            {/* Countdown */}
-           
           </>
         )}
       </div>
@@ -146,11 +128,7 @@ EventCountdown.propTypes = {
     eventDate: PropTypes.string.isRequired,
     dateLabel: PropTypes.string,
     venue: PropTypes.string,
-  }),
-};
-
-EventCountdown.defaultProps = {
-  countdownData: COUNTDOWN_DATA,
+  }).isRequired,
 };
 
 export default EventCountdown;

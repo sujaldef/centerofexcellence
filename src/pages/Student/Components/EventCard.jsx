@@ -8,9 +8,9 @@ const FALLBACK_IMAGE = "https://via.placeholder.com/300x150?text=Event+Image";
 
 // Status colors
 const statusColors = {
-  upcoming: '#2196F3',
-  registered: '#4CAF50',
-  past: '#757575',
+  upcoming: "#2196F3",
+  registered: "#4CAF50",
+  past: "#757575",
 };
 
 // Main component for rendering an event card
@@ -43,7 +43,7 @@ const EventCard = ({ id, title, category, venue, date, image, status }) => {
           {status && (
             <span
               className="inline-block text-xs font-semibold px-3 py-1 rounded-full text-white shadow-md"
-              style={{ backgroundColor: statusColors[status] || '#757575' }}
+              style={{ backgroundColor: statusColors[status] || "#757575" }}
               role="label"
               tabIndex={0}
               aria-label={`Status: ${status}`}
@@ -66,9 +66,9 @@ const EventCard = ({ id, title, category, venue, date, image, status }) => {
           {isUpcoming ? (
             <div className="flex gap-2">
               <Link
-                to="/student/event-registration"
-                className="flex-1 text-center px-3 py-2 text-sm rounded-lg font-semibold bg-[#AB47BC] text-[#ffffff] shadow-md hover:bg-[linear-gradient(90deg,#8E24AA_0%,#4A148C_100%)] hover:scale-105 transition-all duration-200 focus:ring-2 focus:ring-[#AB47BC]"
-                aria-label={`Apply for ${title}`}
+                to={`/student/event-registration/${id}`} // Changed event._id to id
+                className="flex-1 text-center px-3 py-2 text-sm rounded-xl font-semibold bg-gradient-to-r from-purple-700 to-purple-900 text-gray-100 shadow-md hover:from-purple-600 hover:to-purple-800 hover:scale-105 transition-all duration-200"
+                aria-label={`Apply for ${title}`} // Changed event.eventName to title
               >
                 Apply Now
               </Link>

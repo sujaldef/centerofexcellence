@@ -1,39 +1,11 @@
+// EventTimeline.jsx
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-// Constant for timeline data
-const TIMELINE_DATA = [
-  {
-    date: '11 AUG',
-    time: '9:00 AM - 10:30 AM',
-    location: 'Main Hall',
-    title: 'Opening Ceremony',
-    description: 'Welcome address and keynote speech.',
-    image: '/timelineimg.1.png',
-  },
-  {
-    date: '16 AUG',
-    time: '11:00 AM - 1:00 PM',
-    location: 'Exhibition Hall',
-    title: 'Technology Showcase',
-    description: 'Interactive demonstrations of cutting-edge technologies.',
-    image: '/timelineimg.2.png',
-  },
-  {
-    date: '23 AUG',
-    time: '2:00 PM - 4:00 PM',
-    location: 'Conference Room A',
-    title: 'Panel Discussion',
-    description: 'Industry experts discuss future trends.',
-    image: '/timelineimg.3.png',
-  },
-];
-
-const EventTimeline = ({ timelineData = TIMELINE_DATA }) => {
+const EventTimeline = ({ timelineData }) => {
   const eventRefs = useRef([]);
 
   useEffect(() => {
-    // Fallback for browsers without IntersectionObserver
     if (!window.IntersectionObserver) {
       eventRefs.current.forEach((ref) => {
         if (ref) {
@@ -51,8 +23,6 @@ const EventTimeline = ({ timelineData = TIMELINE_DATA }) => {
             ref.classList.add('opacity-100', 'translate-y-0');
             ref.classList.remove('opacity-0', 'translate-y-10');
             observer.unobserve(ref);
-            // Debug log to confirm animation (remove in production)
-            console.log(`Timeline item ${index} animated`);
           }
         },
         { threshold: 0.5 }
@@ -87,7 +57,6 @@ const EventTimeline = ({ timelineData = TIMELINE_DATA }) => {
                 role="region"
                 aria-label={`Timeline event: ${event.title}`}
               >
-                {/* Timeline Circle and Line */}
                 <div className="flex flex-col items-center mr-8 relative">
                   <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     {event.date}
@@ -96,7 +65,6 @@ const EventTimeline = ({ timelineData = TIMELINE_DATA }) => {
                     <div className="w-1 bg-purple-600 absolute top-[80px] h-[calc(100%+88px)]" />
                   )}
                 </div>
-                {/* Event Details */}
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
                     <span className="text-sm text-gray-400 mr-4">{event.time}</span>
@@ -107,7 +75,6 @@ const EventTimeline = ({ timelineData = TIMELINE_DATA }) => {
                   </h3>
                   <p className="text-base text-gray-300">{event.description}</p>
                 </div>
-                {/* Event Image */}
                 <div className="ml-8">
                   <img
                     src={event.image}
@@ -137,11 +104,7 @@ EventTimeline.propTypes = {
       description: PropTypes.string.isRequired,
       image: PropTypes.string.isRequired,
     })
-  ),
-};
-
-EventTimeline.defaultProps = {
-  timelineData: TIMELINE_DATA,
+  ).isRequired,
 };
 
 export default EventTimeline;

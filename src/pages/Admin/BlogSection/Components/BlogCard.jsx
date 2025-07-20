@@ -1,13 +1,14 @@
+// src/components/admin/Components/BlogCard.jsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiEye, FiCheck, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
-const BlogCard = ({ _id, poster, title, description, authorName, category, status, onPublish, onReject }) => {
+const BlogCard = ({ _id, poster, title, description, authorName, authorType, category, status, onPublish, onReject }) => {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
-  console.log('BlogCard Props:', { _id, title, status });
+  console.log('BlogCard Props:', { _id, title, authorType, status });
 
   const getStatusText = () => {
     switch (status) {
@@ -17,6 +18,19 @@ const BlogCard = ({ _id, poster, title, description, authorName, category, statu
         return 'Pending Review';
       case 'rejected':
         return 'Rejected';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getAuthorTypeText = () => {
+    switch (authorType) {
+      case 'student':
+        return 'Student';
+      case 'admin':
+        return 'Admin';
+      case 'user':
+        return 'User';
       default:
         return 'Unknown';
     }
@@ -109,7 +123,9 @@ const BlogCard = ({ _id, poster, title, description, authorName, category, statu
           <div>
             <h3 className="text-lg font-semibold text-white truncate">{title || 'Untitled'}</h3>
             <p className="text-sm text-gray line-clamp-2">{description || 'No description available'}</p>
-            <p className="text-sm text-gray mt-1">By {authorName || 'Unknown Author'}</p>
+            <p className="text-sm text-gray mt-1">
+              By {authorName || 'Unknown Author'} ({getAuthorTypeText()})
+            </p>
           </div>
         </div>
         <div className="flex flex-row gap-2">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from './Components/Sidebar';
@@ -7,105 +7,12 @@ import StatsCard from './Components/StatsCard';
 import ActionButtons from './Components/ActionButtons';
 import EventSection from './Components/EventSection';
 import EventCalendar from './Components/EventCalendar';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchEvents, clearError } from '../../../redux/slices/eventSlice';
 
 const AdminDashboard = () => {
-  const eventData = {
-    upcoming: [
-      {
-        title: 'Tech Summit 2024',
-        type: 'Conference',
-        date: '2024-03-15',
-        attendees: '450/500',
-        status: 'Upcoming',
-        badgeColor: 'bg-[var(--primary-color)]',
-      },
-      {
-        title: 'Digital Marketing',
-        type: 'Workshop',
-        date: '2024-03-18',
-        attendees: '200/250',
-        status: 'Upcoming',
-        badgeColor: 'bg-[var(--primary-color)]',
-      },
-      {
-        title: 'Digital Marketing',
-        type: 'Workshop',
-        date: '2024-03-18',
-        attendees: '200/250',
-        status: 'Upcoming',
-        badgeColor: 'bg-[var(--primary-color)]',
-      },
-      {
-        title: 'Digital Marketing',
-        type: 'Workshop',
-        date: '2024-03-18',
-        attendees: '200/250',
-        status: 'Upcoming',
-        badgeColor: 'bg-[var(--primary-color)]',
-      },
-    ],
-    ongoing: [
-      {
-        title: 'Web3 Hackathon',
-        type: 'Hackathon',
-        date: '2024-03-10',
-        attendees: '180/200',
-        status: 'Ongoing',
-        badgeColor: 'bg-green-600',
-      },
-      {
-        title: 'AI Workshop Series',
-        type: 'Workshop',
-        date: '2024-03-01',
-        attendees: '95/100',
-        status: 'Ongoing',
-        badgeColor: 'bg-green-600',
-      },
-      {
-        title: 'AI Workshop Series',
-        type: 'Workshop',
-        date: '2024-03-01',
-        attendees: '95/100',
-        status: 'Ongoing',
-        badgeColor: 'bg-green-600',
-      },
-    ],
-    past: [
-      {
-        title: 'Blockchain Summit',
-        type: 'Conference',
-        date: '2024-02-28',
-        attendees: '480/500',
-        status: 'Completed',
-        badgeColor: 'bg-gray-600',
-      },
-      {
-        title: 'UX Design Workshop',
-        type: 'Workshop',
-        date: '2024-02-25',
-        attendees: '150/150',
-        status: 'Completed',
-        badgeColor: 'bg-gray-600',
-      },
-      {
-        title: 'UX Design Workshop',
-        type: 'Workshop',
-        date: '2024-02-25',
-        attendees: '150/150',
-        status: 'Completed',
-        badgeColor: 'bg-gray-600',
-      },
-      {
-        title: 'UX Design Workshop',
-        type: 'Workshop',
-        date: '2024-02-25',
-        attendees: '150/150',
-        status: 'Completed',
-        badgeColor: 'bg-gray-600',
-      },
-    ],
-  };
-
+  const dispatch = useDispatch();
+  const { events, loading, error } = useSelector((state) => state.events);
   const [upcomingPage, setUpcomingPage] = useState(0);
   const [ongoingPage, setOngoingPage] = useState(0);
   const [pastPage, setPastPage] = useState(0);
@@ -113,9 +20,40 @@ const AdminDashboard = () => {
   const [sortBy, setSortBy] = useState('date');
   const [filterType, setFilterType] = useState('');
   const [showStatsDetails, setShowStatsDetails] = useState(false);
-  const itemsPerPage = 2;
+  const itemsPerPage = window.innerWidth < 768 ? 1 : 2;
 
-  // Filter and sort events
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+    console.log('Current events:', events);
+  }, [error, events]);
+
+  const categorizeEvents = (events) => {
+    const now = new Date();
+    return {
+      upcoming: events.filter((event) => {
+        const eventDate = new Date(`${event.month} ${event.date}, ${event.year}`);
+        console.log(`Event: ${event.title}, Parsed Date: ${eventDate}, Original: ${event.month} ${event.date}, ${event.year}`);
+        return eventDate > now;
+      }),
+      ongoing: events.filter((event) => {
+        const eventDate = new Date(`${event.month} ${event.date}, ${event.year}`);
+        return eventDate <= now && event.status === 'Active';
+      }),
+      past: events.filter((event) => {
+        const eventDate = new Date(`${event.month} ${event.date}, ${event.year}`);
+        return eventDate <= now && (event.status === 'Completed' || event.status === 'Cancelled' || event.status === 'Pending');
+      }),
+    };
+  };
+
+  const { upcoming, ongoing, past } = useMemo(() => categorizeEvents(events), [events]);
+
   const filterAndSortEvents = (events) => {
     let filtered = [...events];
     if (searchQuery) {
@@ -128,25 +66,25 @@ const AdminDashboard = () => {
     }
     filtered.sort((a, b) => {
       if (sortBy === 'date') {
-        return new Date(b.date) - new Date(a.date);
+        return new Date(`${b.month} ${b.date}, ${b.year}`) - new Date(`${a.month} ${a.date}, ${a.year}`);
       }
       return a.title.localeCompare(b.title);
     });
     return filtered;
   };
 
-  const upcomingEvents = useMemo(() => filterAndSortEvents(eventData.upcoming), [searchQuery, sortBy, filterType]);
-  const ongoingEvents = useMemo(() => filterAndSortEvents(eventData.ongoing), [searchQuery, sortBy, filterType]);
-  const pastEvents = useMemo(() => filterAndSortEvents(eventData.past), [searchQuery, sortBy, filterType]);
+  const upcomingEvents = useMemo(() => filterAndSortEvents(upcoming), [upcoming, searchQuery, sortBy, filterType]);
+  const ongoingEvents = useMemo(() => filterAndSortEvents(ongoing), [ongoing, searchQuery, sortBy, filterType]);
+  const pastEvents = useMemo(() => filterAndSortEvents(past), [past, searchQuery, sortBy, filterType]);
 
-  // Export events as CSV
   const exportToCSV = (events, section) => {
-    const headers = ['Title', 'Type', 'Date', 'Attendees', 'Status'];
+    const headers = ['Title', 'Type', 'Date', 'Attendees', 'Max Attendees', 'Status'];
     const rows = events.map((event) => [
       event.title,
       event.type,
-      event.date,
+      `${event.month} ${event.date}, ${event.year}`,
       event.attendees,
+      event.capacity || 'N/A',
       event.status,
     ]);
     const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
@@ -160,7 +98,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-dark text-gray flex font-sans">
-     
       <Sidebar />
       <div className="flex-1 p-8 space-y-6">
         <StatsCard
@@ -176,6 +113,21 @@ const AdminDashboard = () => {
           setFilterType={setFilterType}
         />
         <ActionButtons />
+        {error && (
+          <div className="text-red-600 text-center">
+            {error}
+            <button
+              onClick={() => {
+                dispatch(clearError());
+                dispatch(fetchEvents());
+              }}
+              className="ml-2 text-[var(--primary-color)] hover:text-[var(--border-accent)]"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        {loading && <p className="text-white/60 text-center">Loading events...</p>}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <EventSection
             title="Upcoming Events"
@@ -198,7 +150,7 @@ const AdminDashboard = () => {
           <div className="space-y-3">
             <h4 className="font-semibold text-medium text-white">Event Calendar</h4>
             <div className="bg-dark rounded-xl p-4 card">
-              <EventCalendar />
+              <EventCalendar events={events} />
             </div>
           </div>
         </div>
@@ -212,6 +164,7 @@ const AdminDashboard = () => {
           exportToCSV={exportToCSV}
         />
       </div>
+      <ToastContainer />
     </div>
   );
 };

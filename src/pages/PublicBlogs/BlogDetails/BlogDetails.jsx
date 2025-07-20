@@ -2,16 +2,19 @@ import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBlogById } from '../../../redux/slices/blogSlice';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import DOMPurify from 'dompurify';
 
 const BlogDetails = () => {
-  const { id } = useParams(); // Get the blog ID from the URL
+  const { id } = useParams();
   const dispatch = useDispatch();
   const { selectedBlog, loading, error } = useSelector((state) => state.blogs);
 
   useEffect(() => {
     if (id) {
-      dispatch(fetchBlogById(id)); // Fetch blog by ID
+      dispatch(fetchBlogById(id));
     }
   }, [dispatch, id]);
 
@@ -31,7 +34,7 @@ const BlogDetails = () => {
         {/* Hero Image */}
         <div className="relative h-96 w-full mb-6 rounded-xl overflow-hidden card">
           <img
-            src={selectedBlog.poster || '/default-image.jpg'} // Fallback image
+            src={selectedBlog.poster || '/default-image.jpg'}
             alt={selectedBlog.title}
             className="w-full h-full object-cover"
           />
@@ -43,11 +46,6 @@ const BlogDetails = () => {
 
         {/* Author Info */}
         <div className="bg-sub-dark p-6 w-full rounded-xl card mb-6 flex items-center gap-4">
-          <img
-            src={selectedBlog.authorAvatar || '/default-avatar.jpg'} // Fallback avatar
-            alt={selectedBlog.authorName}
-            className="w-16 h-16 rounded-full object-cover"
-          />
           <div>
             <h3 className="text-medium font-semibold text-white">By {selectedBlog.authorName}</h3>
             <p className="text-small text-gray-400">{selectedBlog.authorBio || 'No bio available.'}</p>
@@ -55,25 +53,24 @@ const BlogDetails = () => {
         </div>
 
         {/* Blog Content */}
-        <div className="bg-white p-6 w-full rounded-xl card">
-          <h2 className="text-medium font-semibold text-gray-600 mb-4">Blog Details</h2>
-          <div
-            className="text-small text-gray-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedBlog.description) }}
+        <div className="p-6 w-full rounded-xl text-white text-medium card prose prose-invert max-w-none">
+          <h2 className="text-big font-semibold text-white mb-4">Blog Details</h2>
+          <ReactMarkdown
+            
+            children={DOMPurify.sanitize(selectedBlog.description)}
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
           />
           {selectedBlog.venue && (
-            <p className="text-small text-gray-400 mt-4">
+            <p className="text-big text-gray-400 mt-4">
               <strong>Venue:</strong> {selectedBlog.venue}
             </p>
           )}
           {selectedBlog.date && (
-            <p className="text-small text-gray-400 mt-2">
+            <p className="text-big text-gray-400 mt-2">
               <strong>Date:</strong> {selectedBlog.date}
             </p>
           )}
-          <p className="text-small text-gray-400 mt-2">
-            <strong>Status:</strong> {selectedBlog.status === 'accepted' ? 'Published' : selectedBlog.status}
-          </p>
         </div>
       </div>
     </div>

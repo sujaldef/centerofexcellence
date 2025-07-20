@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 
 IST = pytz.timezone("Asia/Kolkata")
+
 class Notification(BaseModel):
     event_id: str
     type: Literal['text', 'poster', 'deadline', 'cancellation']

@@ -1,3 +1,4 @@
+# app/models/blog_model.py
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 from bson.objectid import ObjectId
@@ -28,7 +29,7 @@ class PyObjectId(ObjectId):
 class Blog(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
     title: str
-    authorType: str = Field(..., pattern="^(user|admin)$")
+    authorType: str = Field(..., pattern="^(user|admin|student)$")  # Added 'student'
     authorId: str
     authorName: str
     authorProfilePic: Optional[str] = None
@@ -51,7 +52,7 @@ class Blog(BaseModel):
             "example": {
                 "_id": "507f1f77bcf86cd799439011",
                 "title": "The Future of AI in 2025",
-                "authorType": "user",
+                "authorType": "student",  # Updated example to show student
                 "authorId": "507f1f77bcf86cd799439011",
                 "authorName": "John Doe",
                 "authorProfilePic": "https://example.com/images/johndoe.jpg",
@@ -68,7 +69,7 @@ class Blog(BaseModel):
 
 class BlogUpdate(BaseModel):
     title: Optional[str] = None
-    authorType: Optional[str] = Field(default=None, pattern="^(user|admin)$")
+    authorType: Optional[str] = Field(default=None, pattern="^(user|admin|student)$")  # Added 'student'
     authorId: Optional[str] = None
     authorName: Optional[str] = None
     authorProfilePic: Optional[str] = None

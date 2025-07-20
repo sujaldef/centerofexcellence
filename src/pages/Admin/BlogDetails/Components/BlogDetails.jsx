@@ -1,7 +1,10 @@
+// src/components/admin/BlogDetails.jsx
 import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBlogById } from '../../../../redux/slices/blogSlice';
+import ReactMarkdown from 'react-markdown';
+import { toast } from 'react-toastify';
 
 const BlogDetails = () => {
   const { id } = useParams(); // Get the blog ID from the URL
@@ -14,9 +17,30 @@ const BlogDetails = () => {
     }
   }, [dispatch, id]);
 
+  // Show toast for errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   if (loading) return <p className="text-gray text-center">Loading...</p>;
   if (error) return <p className="text-red-500 text-center">{error}</p>;
   if (!selectedBlog) return <p className="text-gray text-center">Blog not found.</p>;
+
+  // Format authorType for display
+  const getAuthorTypeText = () => {
+    switch (selectedBlog.authorType) {
+      case 'student':
+        return 'Student';
+      case 'admin':
+        return 'Admin';
+      case 'user':
+        return 'User';
+      default:
+        return 'Unknown';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6 md:px-20">
@@ -43,20 +67,26 @@ const BlogDetails = () => {
         {/* Author Info */}
         <div className="bg-sub-dark p-6 w-full rounded-xl card mb-6 flex items-center gap-4">
           <img
-            src={selectedBlog.authorAvatar || '/default-avatar.jpg'} // Fallback avatar
+            src={selectedBlog.authorProfilePic || '/default-avatar.jpg'} // Updated to use authorProfilePic
             alt={selectedBlog.authorName}
             className="w-16 h-16 rounded-full object-cover"
           />
           <div>
-            <h3 className="text-medium font-semibold text-white">By {selectedBlog.authorName}</h3>
-            <p className="text-small text-gray">{selectedBlog.authorBio || 'No bio available.'}</p>
+            <h3 className="text-medium font-semibold text-white">
+              By {selectedBlog.authorName} ({getAuthorTypeText()})
+            </h3>
+            <p className="text-small text-gray">
+              {selectedBlog.authorBio || 'No bio available.'}
+            </p>
           </div>
         </div>
 
         {/* Blog Content */}
-        <div className="bg-sub-dark p-6  w-full rounded-xl card">
+        <div className="bg-sub-dark p-6 w-full rounded-xl card">
           <h2 className="text-medium font-semibold text-white mb-4">Blog Details</h2>
-          <p className="text-small text-gray leading-relaxed">{selectedBlog.description}</p>
+          <div className="prose prose-invert text-medium text-white leading-relaxed max-w-none">
+            <ReactMarkdown>{selectedBlog.description}</ReactMarkdown>
+          </div>
           {selectedBlog.venue && (
             <p className="text-small text-gray mt-4">
               <strong>Venue:</strong> {selectedBlog.venue}
@@ -68,7 +98,11 @@ const BlogDetails = () => {
             </p>
           )}
           <p className="text-small text-gray mt-2">
-            <strong>Status:</strong> {selectedBlog.status === 'accepted' ? 'Published' : selectedBlog.status}
+            <strong>Status:</strong>{' '}
+            {selectedBlog.status === 'accepted' ? 'Published' : selectedBlog.status}
+          </p>
+          <p className="text-small text-gray mt-2">
+            <strong>Tags:</strong> {selectedBlog.tags.join(', ') || 'None'}
           </p>
         </div>
       </div>

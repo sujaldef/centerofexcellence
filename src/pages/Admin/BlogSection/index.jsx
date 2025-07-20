@@ -1,8 +1,10 @@
+// src/components/admin/BlogSection.jsx
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBlogs, publishBlog, rejectBlog, unpublishBlog, deleteBlog } from '../../../redux/slices/blogSlice';
+import { toast } from 'react-toastify';
 import Sidebar from '../AdminDashboard/Components/Sidebar';
 import SmallBlogCard from './Components/SmallBlogCard';
 import BlogCard from './Components/BlogCard';
@@ -20,14 +22,22 @@ const BlogSection = () => {
     dispatch(fetchBlogs());
   }, [dispatch]);
 
-  // Debug: Log blogs to check _id values
+  // Debug: Log blogs to check _id and authorType values
   useEffect(() => {
     console.log('Blogs:', blogs);
   }, [blogs]);
 
+  // Toast error messages
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handlePublish = (id) => {
     if (!id) {
       console.error('Missing blog ID:', id);
+      toast.error('Invalid blog ID');
       return;
     }
     dispatch(publishBlog(id));
@@ -36,6 +46,7 @@ const BlogSection = () => {
   const handleReject = (id) => {
     if (!id) {
       console.error('Missing blog ID:', id);
+      toast.error('Invalid blog ID');
       return;
     }
     dispatch(rejectBlog(id));
@@ -44,6 +55,7 @@ const BlogSection = () => {
   const handleUnpublish = (id) => {
     if (!id) {
       console.error('Missing blog ID:', id);
+      toast.error('Invalid blog ID');
       return;
     }
     dispatch(unpublishBlog(id));
@@ -52,6 +64,7 @@ const BlogSection = () => {
   const handleDelete = (id) => {
     if (!id) {
       console.error('Missing blog ID:', id);
+      toast.error('Invalid blog ID');
       return;
     }
     dispatch(deleteBlog(id));
@@ -60,7 +73,14 @@ const BlogSection = () => {
   const filteredBlogs = blogs
     .filter(blog =>
       blog._id && // Ensure _id exists
-      (view === 'requests' ? blog.status === 'pending' : true) &&
+      (
+        view === 'requests'
+          ? blog.status === 'pending' && blog.authorType === 'student' // Pending student blogs
+          : (
+              blog.authorType === 'admin' || // All admin blogs
+              (blog.authorType === 'student' && blog.status === 'accepted') // Accepted student blogs
+            )
+      ) &&
       blog.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (categoryFilter ? blog.category === categoryFilter : true)
     )
@@ -72,25 +92,22 @@ const BlogSection = () => {
       return 0;
     });
 
-  if (loading) return <p className="text-gray text-center">Loading...</p>;
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
-
   return (
     <div className="flex min-h-screen bg-dark">
       <Sidebar />
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-white mb-6">Blogs</h1>
+        <h1 className="text-3xl font-bold text-white mb-6">Blog Management</h1>
         <div className="p-4 rounded-xl bg-sub-dark mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
             <div className="relative w-full sm:w-64">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray" />
               <input
                 type="text"
-                placeholder={`Search ${view === 'all' ? 'blogs' : 'blog requests'}...`}
+                placeholder={`Search ${view === 'all' ? 'blogs' : 'student blog requests'}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg bg-sub-dark border border-[var(--border-accent)] text-white placeholder-gray-500 focus:outline-none"
-                aria-label={`Search ${view === 'all' ? 'blogs' : 'blog requests'}`}
+                aria-label={`Search ${view === 'all' ? 'blogs' : 'student blog requests'}`}
               />
             </div>
             <div className="flex gap-3">
@@ -133,9 +150,9 @@ const BlogSection = () => {
                 <button
                   onClick={() => setView('requests')}
                   className={`btn-primary text-sm ${view === 'requests' ? '' : 'bg-[var(--border-accent)]'}`}
-                  aria-label="View blog requests"
+                  aria-label="View student blog requests"
                 >
-                  Blog Requests
+                  Student Blog Requests
                 </button>
               </div>
               <Link
@@ -149,7 +166,9 @@ const BlogSection = () => {
           </div>
         </div>
         {filteredBlogs.length === 0 ? (
-          <p className="text-gray text-center">No blogs found.</p>
+          <p className="text-gray text-center">
+            {view === 'requests' ? 'No pending student blog requests.' : 'No blogs found.'}
+          </p>
         ) : (
           <div className={`grid gap-6 ${view === 'all' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'}`}>
             {filteredBlogs.map(blog => (
@@ -161,13 +180,15 @@ const BlogSection = () => {
                   title={blog.title}
                   description={blog.description}
                   authorName={blog.authorName}
+                  authorType={blog.authorType}
                   category={blog.category}
                   status={blog.status}
                   onUnpublish={handleUnpublish}
                   onDelete={handleDelete}
                   onEdit={() => {
                     if (!blog._id) {
-                      console.error('Missing blog ID for edit:', blog._id);
+                      console.error('Missing blog ID for edit:', blog);
+                      toast.error('Invalid blog ID');
                       return;
                     }
                     navigate(`/admin/blogs/edit/${blog._id}`);
@@ -182,6 +203,7 @@ const BlogSection = () => {
                   title={blog.title}
                   description={blog.description}
                   authorName={blog.authorName}
+                  authorType={blog.authorType}
                   category={blog.category}
                   status={blog.status}
                   onPublish={handlePublish}

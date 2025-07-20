@@ -71,8 +71,8 @@ class Event(BaseModel):
     location: str
     capacity: Optional[int] = None
     eventMode: str = Field(default="virtual", pattern="^(virtual|physical)$")
-    bannerImage: str
-    thumbnailImage: str
+    bannerImage: Optional[str] = None  # Changed to Optional
+    thumbnailImage: Optional[str] = None  # Changed to Optional
     description: str
     highlights: List[HighlightItem] = []
     faqs: List[FAQItem] = []

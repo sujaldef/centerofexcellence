@@ -1,3 +1,4 @@
+// src/components/admin/Components/EventSection.jsx
 import React from 'react';
 import { FiDownload, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import EventCard from './EventCard';
@@ -32,12 +33,11 @@ const EventSection = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {visibleEvents.map((event, i) => (
+          {visibleEvents.map((event) => (
             <EventCard
-              key={`${section}-${i}`}
+              key={event._id}
               event={event}
               section={section}
-              index={i}
             />
           ))}
         </div>

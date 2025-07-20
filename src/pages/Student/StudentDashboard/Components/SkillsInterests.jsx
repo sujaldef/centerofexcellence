@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../../../../redux/slices/userSlice';
 
-const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development', 'UI/UX Design'], initialInterests = ['Programming', 'Design', 'AI/ML'] }) => {
+const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development', 'UI/UX Design'], initialInterests = ['Programming', 'Design', 'AI/ML'], userId }) => {
   const [skills, setSkills] = useState(initialSkills);
   const [interests, setInterests] = useState(initialInterests);
   const [newSkill, setNewSkill] = useState('');
@@ -10,8 +12,9 @@ const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development
   const [addingInterest, setAddingInterest] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const dispatch = useDispatch();
 
-  const handleAddItem = (type, value, setItems, setInput, setAdding) => {
+  const handleAddItem = async (type, value, setItems, setInput, setAdding) => {
     const trimmedValue = value.trim();
     if (!trimmedValue) {
       setError(`${type} cannot be empty`);
@@ -25,18 +28,48 @@ const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development
       setError('Interest already exists');
       return;
     }
-    setItems((prev) => [...prev, trimmedValue]);
+    if (!userId || !/^[0-9a-fA-F]{24}$/.test(userId)) {
+      setError('Cannot save changes: User ID is invalid or missing.');
+      return;
+    }
+
+    const updatedItems = [...(type === 'Skill' ? skills : interests), trimmedValue];
+    setItems(updatedItems);
     setInput('');
     setAdding(false);
     setSuccess(`${type} added successfully!`);
     setError('');
     setTimeout(() => setSuccess(''), 3000);
+
+    try {
+      const userData = type === 'Skill' ? { skills: updatedItems } : { interests: updatedItems };
+      await dispatch(updateUser({ userId, userData })).unwrap();
+    } catch (error) {
+      console.error(`Error updating ${type.toLowerCase()}:`, error);
+      setError(`Failed to save ${type.toLowerCase()}: ${error}`);
+      setItems(type === 'Skill' ? skills : interests); // Revert on error
+    }
   };
 
-  const handleRemoveItem = (index, setItems) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveItem = async (index, setItems, type) => {
+    if (!userId || !/^[0-9a-fA-F]{24}$/.test(userId)) {
+      setError('Cannot save changes: User ID is invalid or missing.');
+      return;
+    }
+
+    const updatedItems = (type === 'Skill' ? skills : interests).filter((_, i) => i !== index);
+    setItems(updatedItems);
     setSuccess('Item removed successfully!');
     setTimeout(() => setSuccess(''), 3000);
+
+    try {
+      const userData = type === 'Skill' ? { skills: updatedItems } : { interests: updatedItems };
+      await dispatch(updateUser({ userId, userData })).unwrap();
+    } catch (error) {
+      console.error(`Error updating ${type.toLowerCase()}:`, error);
+      setError(`Failed to save ${type.toLowerCase()}: ${error}`);
+      setItems(type === 'Skill' ? skills : interests); // Revert on error
+    }
   };
 
   const handleKeyDown = (e, type, value, setItems, setInput, setAdding) => {
@@ -63,7 +96,7 @@ const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development
             {item}
             <button
               type="button"
-              onClick={() => handleRemoveItem(index, setItems)}
+              onClick={() => handleRemoveItem(index, setItems, type)}
               className="ml-2 text-gray hover:text-red-400 transition duration-200 text-sm"
               aria-label={`Remove ${item}`}
             >
@@ -120,11 +153,13 @@ const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development
 SkillsInterests.propTypes = {
   initialSkills: PropTypes.arrayOf(PropTypes.string),
   initialInterests: PropTypes.arrayOf(PropTypes.string),
+  userId: PropTypes.string,
 };
 
 SkillsInterests.defaultProps = {
   initialSkills: ['Machine Learning', 'Web Development', 'UI/UX Design'],
   initialInterests: ['Programming', 'Design', 'AI/ML'],
+  userId: null,
 };
 
 export default SkillsInterests;

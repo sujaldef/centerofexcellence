@@ -1,26 +1,33 @@
+// src/Components/EventHighlights.jsx
 import React from 'react';
 import { FaRegCalendarAlt, FaUsers, FaLightbulb, FaGraduationCap, FaBriefcase } from 'react-icons/fa';
 
-const EventHighlights = () => {
+const iconMap = {
+  keynote: FaRegCalendarAlt,
+  workshop: FaUsers,
+  networking: FaLightbulb,
+  showcase: FaGraduationCap,
+  career: FaBriefcase,
+};
+
+const EventHighlights = ({ highlights }) => {
   return (
-    <div className="mt-6 p-6 bg-[#01010f] text-white  rounded-lg shadow-lg">
+    <div className="mt-6 p-6 bg-[#01010f] text-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-semibold mb-4">Event Highlights</h2>
       <ul className="text-sm list-none space-y-3">
-        <li className="flex items-center">
-          <FaRegCalendarAlt className="mr-2 text-[var(--primary)]" /> 40+ Expert Speakers
-        </li>
-        <li className="flex items-center">
-          <FaUsers className="mr-2 text-[var(--primary)]" /> Interactive Workshops
-        </li>
-        <li className="flex items-center">
-          <FaLightbulb className="mr-2 text-[var(--primary)]" /> Networking Sessions
-        </li>
-        <li className="flex items-center">
-          <FaGraduationCap className="mr-2 text-[var(--primary)]" /> Innovation Showcase
-        </li>
-        <li className="flex items-center">
-          <FaBriefcase className="mr-2 text-[var(--primary)]" /> Career Fair
-        </li>
+        {highlights && highlights.length > 0 ? (
+          highlights.map((highlight, index) => {
+            const Icon = iconMap[highlight.type.toLowerCase()] || FaLightbulb;
+            return (
+              <li key={index} className="flex items-center">
+                <Icon className="mr-2 text-[var(--primary)]" />
+                {highlight.title || highlight.description}
+              </li>
+            );
+          })
+        ) : (
+          <li className="text-gray-400">No highlights available</li>
+        )}
       </ul>
     </div>
   );

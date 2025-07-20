@@ -35,7 +35,7 @@ export default function ProjectHighlights() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-[300vh] bg-[#1a1a2a] flex flex-col items-center"
+      className="relative w-full h-[300vh] bg-dark flex flex-col items-center"
       style={{ paddingTop: `${navbarHeight}px` }}
     >
       <h1 className="text-4xl font-bold text-center text-gray-300 mt-20 mb-10">
@@ -62,7 +62,7 @@ export default function ProjectHighlights() {
           }
 
           // Incoming y animation: from 100% to 0%
-          const y = useTransform(scrollYProgress, [start, end], ["100%", "0%"]);
+          const y = useTransform(scrollYProgress, [start, end], ["20%", "0%"]);
 
           const zIndex = useTransform(scrollYProgress, (progress) => {
             const currentIndex = Math.floor(progress * projects.length);
@@ -73,19 +73,19 @@ export default function ProjectHighlights() {
             <motion.div
               key={idx}
               style={{ y, scale, opacity, zIndex }}
-              className="absolute w-[90%] md:w-[85%] lg:w-[86%] bg-[#c7acef] rounded-2xl shadow-2xl overflow-hidden p-6 flex flex-col"
+              className="absolute w-[90%] md:w-[85%] lg:w-[86%] bg-gradient-to-r from-[#382C8B] to-[#0F0C25] rounded-2xl shadow-2xl overflow-y-hidden p-6 flex flex-col"
             >
               {/* Top Info */}
-              <div className="flex justify-between items-center w-full mb-4">
-                <span className="text-xs md:text-sm font-semibold text-black">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-xs md:text-sm font-semibold text-gray-400">
                   {project.date}
                 </span>
-                <h3 className="text-base md:text-xl lg:text-2xl font-bold text-center flex-1 text-black mx-6">
+                <h3 className="text-base md:text-xl lg:text-2xl font-bold text-center flex-1 text-gray-200 mx-6">
                   {project.title}
                 </h3>
                 <a
                   href={project.link}
-                  className="text-xs md:text-sm underline text-black hover:text-purple-700 whitespace-nowrap"
+                  className="text-xs md:text-sm underline text-gray hover:text-purple-700 whitespace-nowrap"
                 >
                   View detail
                 </a>

@@ -5,7 +5,7 @@ const FaqKpiContact = () => {
   return (
     <div>
       <OurPresence />
-      <FAQ />
+      
       
     </div>
   );

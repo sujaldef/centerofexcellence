@@ -1,13 +1,5 @@
-'use client';
-
-import React, { useRef, useEffect, memo } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SplitType from 'split-type';
-import Tilt from 'react-parallax-tilt';
-import { motion } from 'framer-motion';
-
-gsap.registerPlugin(ScrollTrigger);
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const impacts = [
   {
@@ -18,7 +10,8 @@ const impacts = [
       "Practical learning with hands-on projects",
       "Industry exposure to enhance skills",
     ],
-    img: "/impact1.png",
+    img1: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    img2: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   },
   {
     title: "Empowering Future Talent",
@@ -28,7 +21,7 @@ const impacts = [
       "Focused on bridging the industry-academia skill gap",
       "Empowered students to develop job-ready solutions",
     ],
-    img: "/impact2.png",
+    img1: "hero1.jpg",
   },
   {
     title: "Hands Together",
@@ -38,164 +31,143 @@ const impacts = [
       "Delivered immediate relief to vulnerable individuals.",
       "Fostered social responsibility through community support.",
     ],
-    img: "/impact3.jpg",
+    img1: "hero6.jpg",
+    img2: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   },
 ];
 
-const ImpactWeCreate = memo(() => {
-  const containerRef = useRef();
-  const cardRefs = useRef([]);
-  const titleRefs = useRef([]);
-  const descRefs = useRef([]);
-  const highlightRefs = useRef([]);
+// Animation variants for bubbles
+const bubbleVariants = {
+  float: {
+    y: [0, -20, 10, -15, 5, 0],
+    x: [0, 10, -5, 15, -10, 0],
+    transition: {
+      duration: 8,
+      repeat: Infinity,
+      repeatType: 'loop',
+      ease: 'easeInOut',
+    },
+  },
+};
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: `+=${impacts.length * 250}%`,
-          scrub: true,
-          pin: true,
-        },
-      });
 
-      impacts.forEach((_, i) => {
-        const split = new SplitType(titleRefs.current[i], { types: 'chars' });
+// Animation variants for images
+const imageVariants = {
+  initial: {
+    scale: 1,
+    rotate: -6,
+    zIndex: 10,
+  },
+  hover: {
+    scale: 1.1,
+    rotate: 0,
+    zIndex: 20,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut',
+    },
+  },
+};
 
-        timeline
-          .from(cardRefs.current[i], {
-            scale: 0.8,
-            opacity: 0,
-            zIndex: 0,
-            duration: 1,
-            ease: 'power2.out',
-          })
-          .to(cardRefs.current[i], {
-            scale: 1,
-            opacity: 1,
-            zIndex: 10,
-            duration: 1,
-            ease: 'power2.out',
-          })
-          .from(split.chars, {
-            opacity: 0,
-            y: 20,
-            stagger: 0.05,
-            duration: 1,
-            ease: 'power2.out',
-          }, "-=0.5")
-          .from(descRefs.current[i], {
-            opacity: 0,
-            y: 20,
-            duration: 1,
-            ease: 'power2.out',
-          }, "-=0.4")
-          .from(highlightRefs.current[i].children, {
-            opacity: 0,
-            y: 20,
-            stagger: 0.2,
-            duration: 1,
-            ease: 'power2.out',
-          }, "-=0.4")
-          .to(cardRefs.current[i], {
-            scale: 0.8,
-            opacity: 0,
-            zIndex: 0,
-            duration: 1,
-            ease: 'power2.inOut',
-          });
-      });
-    }, containerRef);
+const secondImageVariants = {
+  initial: {
+    scale: 1,
+    rotate: 6,
+    zIndex: 10,
+  },
+  hover: {
+    scale: 1.1,
+    rotate: 0,
+    zIndex: 20,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut',
+    },
+  },
+};
 
-    return () => ctx.revert();
-  }, []);
-
-  const cardStyle = "relative w-[85vw] md:w-[83vw] h-[85vh] bg-gradient-to-r from-[#1f1f38] via-[#2c2c54] to-[#1f1f38] rounded-3xl shadow-2xl overflow-hidden border border-purple-400/20 backdrop-blur-md flex flex-col";
-  const textStyle = "flex flex-col items-center text-center p-6 space-y-6 w-full";
-
+const ImpactWeCreate = () => {
   return (
-    <section
-      ref={containerRef}
-      className="relative w-full h-screen bg-[#0a0a1a] text-white flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        backgroundImage: "url('/grid-texture.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "repeat",
-      }}
-    >
-      <h1 className="absolute top-4 left-1/2 transform -translate-x-1/2 text-4xl font-bold z-10">Impact We Create</h1>
+    <section className="w-full mt-15 mb-20 bg-dark text-white py-16">
+      <div className="max-w-7xl gap-30 mx-auto flex flex-col items-center space-y-40 px-6">
+        {impacts.map((impact, index) => {
+          const isEven = index % 2 === 0;
+          const showBigBubbles = index === 0 || index === 2;
+          const hasTwoPhotos = index === 0 || index === 2;
+          const adjustedGap = hasTwoPhotos ? 'gap-40' : 'gap-10';
 
-      <div className="absolute top-[10vh] left-0 right-0 bottom-0 flex flex-col items-center justify-center">
-        {impacts.map((impact, index) => (
-          <div
-            key={index}
-            ref={(el) => (cardRefs.current[index] = el)}
-            className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center"
-          >
-            <Tilt
-              glareEnable={false}
-              tiltMaxAngleX={3}
-              tiltMaxAngleY={3}
-              perspective={2000}
-              transitionSpeed={1500}
-              scale={1.005}
-              className={cardStyle}
+          return (
+            <div
+              key={index}
+              className={`relative w-full flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-center justify-between ${adjustedGap}`}
             >
-              {/* Image: Now takes 40% of the height */}
-              <motion.div
-                className="w-full flex-none h-[30%] overflow-hidden rounded-t-3xl"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 4, repeatType: "reverse", ease: "easeInOut" }}
-              >
-                <img
-                  src={impact.img}
-                  alt="Impact Banner"
-                  className="w-full h-full object-cover object-center"
-                />
-              </motion.div>
+              {/* Background Bubbles */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {showBigBubbles ? (
+                  <>
+                    <motion.div
+                      className="absolute w-[450px] h-[450px] bg-gradient-to-r from-[#AB47BC]/20 to-[#4A148C]/20 rounded-full -translate-x-[20%] translate-y-[10%]"
+                      variants={bubbleVariants}
+                      animate="float"
+                    ></motion.div>
+                    <motion.div
+                      className="absolute w-[300px] h-[300px] bg-gradient-to-r from-[#AB47BC]/30 to-[#4A148C]/30 rounded-full translate-x-[10%] -translate-y-[20%]"
+                      variants={bubbleVariants}
+                      animate="float"
+                    ></motion.div>
+                  </>
+                ) : (
+                  <motion.div
+                    className="absolute w-[200px] h-[200px] bg-gradient-to-r from-[#AB47BC]/20 to-[#4A148C]/20 rounded-full translate-x-[10%] translate-y-[10%]"
+                    variants={bubbleVariants}
+                    animate="float"
+                  ></motion.div>
+                )}
+              </div>
 
-              {/* Text Content */}
-              <div className={textStyle}>
-                <h2
-                  ref={(el) => (titleRefs.current[index] = el)}
-                  className="text-4xl font-bold leading-tight"
-                >
-                  {impact.title}
-                </h2>
-
-                <p
-                  ref={(el) => (descRefs.current[index] = el)}
-                  className="text-lg text-gray-300 max-w-xl"
-                >
-                  {impact.description}
-                </p>
-
-                <div
-                  ref={(el) => (highlightRefs.current[index] = el)}
-                  className="text-gray-400 text-lg space-y-1"
-                >
-                  {impact.highlights.map((highlight, i) => (
-                    <p key={i}>{highlight}</p>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap justify-center gap-6 mt-6">
-                  <button
-                    className="px-3 py-2 text-sm rounded-full font-semibold bg-[#AB47BC] text-white shadow-md hover:bg-gradient-to-r hover:from-[#8E24AA] hover:to-[#4A148C] hover:scale-105 transition-all duration-200 focus:ring-2 focus:ring-[#AB47BC] cursor-pointer"
-                  >
-                    Join Us
-                  </button>
+              {/* Image(s) */}
+              <div className="relative w-full lg:w-1/2 flex justify-center">
+                <div className="relative">
+                  <motion.img
+                    src={impact.img1}
+                    alt={`${impact.title} - 1`}
+                    className="w-72 h-72 object-cover rounded-lg shadow-lg"
+                    variants={imageVariants}
+                    initial="initial"
+                    whileHover="hover"
+                  />
+                  {hasTwoPhotos && (
+                    <motion.img
+                      src={impact.img2}
+                      alt={`${impact.title} - 2`}
+                      className="absolute top-40 left-48 w-72 h-72 object-cover rounded-lg shadow-lg"
+                      variants={secondImageVariants}
+                      initial="initial"
+                      whileHover="hover"
+                    />
+                  )}
                 </div>
               </div>
-            </Tilt>
-          </div>
-        ))}
+
+              {/* Content */}
+              <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 px-4">
+                <h2 className="text-4xl md:text-5xl font-bold leading-tight">{impact.title}</h2>
+                <p className="text-lg text-gray-300 max-w-md">{impact.description}</p>
+                <ul className="text-gray-400 text-lg space-y-2">
+                  {impact.highlights.map((highlight, i) => (
+                    <li key={i}>{highlight}</li>
+                  ))}
+                </ul>
+                <button className="px-6 py-3 text-sm z-20 rounded-full font-semibold bg-[#8D4EF7] hover:bg-[#a570ff]">
+                  Join Us
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
-});
+};
 
 export default ImpactWeCreate;

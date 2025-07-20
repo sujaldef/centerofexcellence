@@ -28,7 +28,7 @@ const Testimonials = () => {
   };
 
   return (
-    <div className="mt-20 gap-10 md:px-20 text-white flex flex-col md:flex-row justify-between items-center bg-dark ml-11">
+    <div className="mt-45 gap-10 md:px-20  mb-15 text-white flex flex-col md:flex-row justify-between items-center bg-dark ml-11">
       <div className="text-center md:text-left md:w-1/2">
         <h1 className="text-big font-bold text-white mb-4">What our participants have to say</h1>
         <p className="text-medium px-6 md:px-0 md:pr-16 text-gray">

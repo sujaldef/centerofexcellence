@@ -1,11 +1,17 @@
-import React from 'react'
+import React from 'react';
 
-const ActionButtons = () => {
+const ActionButtons = ({ onBulkDelete }) => {
   return (
-    <div>
-      
+    <div className="flex gap-3 mb-4">
+      <button
+        onClick={() => alert('Bulk delete not implemented. Select events and try again.')}
+        className="btn-secondary"
+        aria-label="Delete selected events"
+      >
+        Delete Selected
+      </button>
     </div>
-  )
-}
+  );
+};
 
-export default ActionButtons
+export default ActionButtons;

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { FaImage, FaTimes } from 'react-icons/fa';
 
 const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
   const [sponsorInputs, setSponsorInputs] = useState(
     formData.sponsors && formData.sponsors.length > 0
       ? formData.sponsors
-      : [{ name: '', logo: '' }]
+      : [{ name: '', logo: null }]
   );
 
-  // SVG for Users Icon (for Organizer)
   const UsersIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -27,25 +27,6 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Image Icon (for Sponsor Logo)
-  const ImageIcon = () => (
-    <svg
-      className="text-[var(--border-accent)] w-5 h-5 mr-2"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
-    </svg>
-  );
-
-  // SVG for Mail Icon (for Email)
   const MailIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -62,7 +43,6 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Phone Icon (for Phone Number)
   const PhoneIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -85,8 +65,21 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
     handleInputChange({ target: { name: 'sponsors', value: updatedSponsors } });
   };
 
+  const handleSponsorLogoChange = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleSponsorChange(index, 'logo', file);
+      toast.success(`Sponsor ${index + 1} logo uploaded!`);
+    }
+  };
+
+  const removeSponsorLogo = (index) => {
+    handleSponsorChange(index, 'logo', null);
+    toast.info(`Sponsor ${index + 1} logo removed`);
+  };
+
   const addSponsor = () => {
-    const newSponsors = [...sponsorInputs, { name: '', logo: '' }];
+    const newSponsors = [...sponsorInputs, { name: '', logo: null }];
     setSponsorInputs(newSponsors);
     handleInputChange({ target: { name: 'sponsors', value: newSponsors } });
     toast.success('New sponsor field added!');
@@ -103,16 +96,11 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
     toast.success('Sponsor field removed!');
   };
 
-  const handleChangeWithToast = (e) => {
-    handleInputChange(e);
-  };
-
   return (
     <section className="bg-dark rounded-xl p-6 card mx-auto max-w-7xl">
       <h3 className="text-lg font-semibold text-white mb-6">Sponsors and Organizers</h3>
 
       <div className="space-y-6">
-        {/* Sponsors Section */}
         <div>
           <h4 className="text-md font-medium text-white mb-4">Sponsors</h4>
           {sponsorInputs.map((sponsor, index) => (
@@ -129,15 +117,29 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
                 />
               </div>
               <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
-                <ImageIcon />
-                <input
-                  name={`sponsor-logo-${index}`}
-                  value={sponsor.logo}
-                  onChange={(e) => handleSponsorChange(index, 'logo', e.target.value)}
-                  className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
-                  placeholder="Enter sponsor logo URL"
-                  aria-label={`Sponsor ${index + 1} logo URL`}
-                />
+                <FaImage className="text-[var(--border-accent)] w-5 h-5 mr-2" />
+                {sponsor.logo ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-white truncate">{sponsor.logo.name}</span>
+                    <button
+                      onClick={() => removeSponsorLogo(index)}
+                      className="btn-danger p-1.5 rounded-full"
+                    >
+                      <FaTimes size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer inline-flex items-center gap-2 text-sm text-[var(--border-accent)]">
+                    Upload Logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleSponsorLogoChange(index, e)}
+                      className="hidden"
+                      aria-label={`Upload logo for sponsor ${index + 1}`}
+                    />
+                  </label>
+                )}
               </div>
               <div className="flex items-center justify-end">
                 <button
@@ -164,14 +166,13 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
           )}
         </div>
 
-        {/* Organizer Name */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
             <UsersIcon />
             <input
               name="organizer"
               value={formData.organizer || ''}
-              onChange={handleChangeWithToast}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
               placeholder="Enter organizer name"
               aria-label="Organizer name"
@@ -182,14 +183,13 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
           <p className="text-red-500 text-sm animate-fadeIn">{errors.organizer}</p>
         )}
 
-        {/* Organizer Contact */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
             <MailIcon />
             <input
               name="eventContact.email"
               value={formData.eventContact?.email || ''}
-              onChange={handleChangeWithToast}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
               placeholder="Enter contact email"
               aria-label="Organizer contact email"
@@ -200,7 +200,7 @@ const SponsersAndOrganizers = ({ formData, handleInputChange, errors }) => {
             <input
               name="eventContact.phone"
               value={formData.eventContact?.phone || ''}
-              onChange={handleChangeWithToast}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
               placeholder="Enter contact phone number"
               aria-label="Organizer contact phone number"

@@ -15,7 +15,7 @@ const EventCarouselCard = ({ event }) => {
         </div>
         <div className="flex justify-between gap-4">
           <a
-            href="./register-event"
+            href="./register-event/:id"
             className="w-1/2 text-center px-4 py-2 text-sm rounded-full font-semibold bg-gradient-to-r from-[#6A1B9A] to-[#AB47BC] text-white"
           >
             Apply Now

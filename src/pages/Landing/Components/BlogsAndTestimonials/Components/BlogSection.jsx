@@ -16,8 +16,19 @@ export default function BlogSection() {
     dispatch(fetchBlogs());
   }, [dispatch]);
 
+  // Log the blogs state for debugging
+  useEffect(() => {
+    console.log('Blogs State:', blogs);
+  }, [blogs]);
+
   // Filter published blogs
-  const publishedBlogs = useMemo(() => blogs.filter((blog) => blog.published), [blogs]);
+  const publishedBlogs = useMemo(() => {
+    if (!Array.isArray(blogs)) {
+      console.warn('Blogs is not an array:', blogs);
+      return [];
+    }
+    return blogs.filter((blog) => blog.published);
+  }, [blogs]);
 
   const handleHover = useCallback((index) => setHovered(index), []);
   const handleHoverEnd = useCallback(() => setHovered(null), []);
@@ -33,7 +44,7 @@ export default function BlogSection() {
 
   return (
     <motion.section
-      className="py-16 px-4 bg-gray-950 text-gray-100 overflow-hidden relative"
+      className="py-16 px-4 bg-dark mb-15 mt-30 text-gray-100 overflow-hidden relative"
       role="region"
       aria-label="Blog posts section"
       initial="hidden"

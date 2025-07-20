@@ -16,18 +16,7 @@ const FAQ = () => {
             <FAQItem key={i} question={q} />
           ))}
         </div>
-        <div className="md:w-1/3 h-[250px] bg-sub-dark p-6 rounded-lg text-white flex flex-col justify-between card mr-7">
-          <h3 className="text-medium font-bold mb-2">Still have questions?</h3>
-          <p className="text-small text-gray mb-4">
-            Drop your question and our team will get back to you shortly.
-          </p>
-          <input
-            type="text"
-            placeholder="Type your question here..."
-            className="p-2 rounded-md bg-sub-dark border border-[var(--border-accent)] w-full text-white"
-          />
-          <button className="btn-primary w-full">Submit Question</button>
-        </div>
+        
       </div>
     </div>
   );

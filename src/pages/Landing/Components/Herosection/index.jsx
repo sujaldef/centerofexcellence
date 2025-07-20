@@ -45,7 +45,7 @@ const HeroSection = () => {
   return (
     <div
       ref={ref}
-      className="h-[250vh] py-20 sm:py-32 overflow-hidden overflow-x-hidden relative flex flex-col [perspective:1000px] [transform-style:preserve-3d] bg-[#01010f]"
+      className="h-[270vh] py-20 sm:py-32 overflow-hidden overflow-x-hidden relative flex flex-col [perspective:1000px] [transform-style:preserve-3d] bg-dark"
     >
       <Header />
       <motion.div
@@ -69,13 +69,13 @@ const Header = () => {
         transition={{ duration: 1, ease: "easeOut" }}
         className="flex flex-col items-center space-y-2 text-4xl md:text-8xl font-bold text-white text-center"
       >
-        <span className="bg-gradient-to-r from-purple-600 to-purple-900 bg-clip-text text-transparent">
-  47Billion
-</span>
-<span className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-  Center of Excellence
-</span>
-
+        <span className="bg-gradient-to-r from-[#838295] to-[#FFFFFF] bg-clip-text text-transparent">
+          47Billion
+        </span>
+        <span className="bg-gradient-to-r from-[#838295] to-[#FFFFFF] bg-clip-text text-transparent">
+          Center of Excellence
+        </span>
+        <div className="w-200 h-1 bg-[#6E5AFF] mt-4 rounded-full"></div>
       </motion.div>
 
       <motion.p

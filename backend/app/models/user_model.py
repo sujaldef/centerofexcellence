@@ -24,11 +24,12 @@ class PostedBlog(BaseModel):
     status: str = Field(..., pattern="^(published|unpublished)$")
 
 class User(BaseModel):
+    id: Optional[str] = Field(None, alias="_id")  # Make id optional
     username: str
     password: str
-    email: EmailStr
-    age: int
-    phone: str
+    email: Optional[EmailStr] = None
+    age: Optional[int] = None
+    phone: Optional[str] = None
     profilePic: Optional[str] = None
     description: Optional[str] = None
     skills: List[str] = []
@@ -42,6 +43,9 @@ class User(BaseModel):
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     updatedAt: datetime = Field(default_factory=datetime.utcnow)
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+        allow_population_by_field_name = True  # Allow alias "_id"
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

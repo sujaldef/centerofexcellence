@@ -5,7 +5,7 @@ import CurrentInitiatives from './Components/CurrentInitiatives';
 const KpiAndEvents = () => {
   return (
     
-      <div className='bg-dark'>
+      <div className='bg-dark '>
           <CurrentInitiatives />
         
           <ProjectHighlights />

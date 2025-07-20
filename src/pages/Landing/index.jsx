@@ -7,7 +7,7 @@ import FaqOurPresence from './Components/FaqOurPresence';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-dark text-gray-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-dark  text-gray-100 flex flex-col font-sans">
       <Herosection />
       <InitiativesAndProjects />
       <ImpactWeCreate />

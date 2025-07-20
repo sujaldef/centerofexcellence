@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { createEvent, clearError } from "../../../redux/slices/eventSlice";
 import BasicInformation from "./Components/BasicInformation";
 import EventMedia from "./Components/EventMedia";
 import EventDescription from "./Components/EventDescription";
@@ -6,52 +8,123 @@ import Schedule from "./Components/Schedule";
 import SpeakersOrganizers from "./Components/SpeakersOrganizers";
 import FAQ from "./Components/FAQ";
 import RegistrationInfo from "./Components/RegistrationInfo";
-import { toast, ToastContainer } from "react-toastify";
 import SponsersAndOrganizers from "./Components/SponsersAndOrganizers";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const AddNewEvent = () => {
+  const dispatch = useDispatch();
+  const { loading, error, selectedEvent } = useSelector((state) => state.events);
+
   const [formData, setFormData] = useState({
-    name: "",
+    eventName: "",
     category: "",
     date: "",
-    type: "Physical",
+    eventMode: "physical",
     location: "",
     description: "",
+    tagline: "",
+    tags: [],
+    organizer: "",
+    eventContact: { name: "", email: "", phone: "" },
+    sponsors: [{ name: "", logo: null }],
+    capacity: null,
   });
   const [eventImage, setEventImage] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [schedules, setSchedules] = useState([]);
-  const [speakers, setSpeakers] = useState([
-    { type: "Speaker", name: "", role: "", bio: "", link: "", image: "" },
-  ]);
+  const [speakers, setSpeakers] = useState([]);
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
   const [registrationData, setRegistrationData] = useState({
     requireResume: false,
     requireCoverLetter: false,
     requirePortfolio: false,
-    customFields: [],
+    requireBasicInfo: false,
+    requiredBasicInfo: [],
+    requireWebLink: false,
+    requiredWebLinks: [],
+    customQuestions: [],
     instructions: "",
+    allowedFileTypes: [],
   });
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearError());
+    }
+    if (selectedEvent && !loading) {
+      toast.success("Event created successfully!");
+      // Reset form after successful creation
+      setFormData({
+        eventName: "",
+        category: "",
+        date: "",
+        eventMode: "physical",
+        location: "",
+        description: "",
+        tagline: "",
+        tags: [],
+        organizer: "",
+        eventContact: { name: "", email: "", phone: "" },
+        sponsors: [{ name: "", logo: null }],
+        capacity: null,
+      });
+      setEventImage(null);
+      setThumbnail(null);
+      setSchedules([]);
+      setSpeakers([]);
+      setFaqs([{ question: "", answer: "" }]);
+      setRegistrationData({
+        requireResume: false,
+        requireCoverLetter: false,
+        requirePortfolio: false,
+        requireBasicInfo: false,
+        requiredBasicInfo: [],
+        requireWebLink: false,
+        requiredWebLinks: [],
+        customQuestions: [],
+        instructions: "",
+        allowedFileTypes: [],
+      });
+      setErrors({});
+    }
+  }, [error, selectedEvent, loading, dispatch]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name.includes("eventContact.")) {
+      const [, field] = name.split(".");
+      setFormData((prev) => ({
+        ...prev,
+        eventContact: { ...prev.eventContact, [field]: value },
+      }));
+    } else if (name === "sponsors") {
+      setFormData((prev) => ({ ...prev, sponsors: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImageChange = (idx, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        handleScheduleChange(idx, "image", reader.result);
-        toast.success("Schedule image uploaded!");
-      };
-      reader.readAsDataURL(file);
+      setSchedules((prev) =>
+        prev.map((entry, i) =>
+          i === idx ? { ...entry, image: file } : entry
+        )
+      );
+      toast.success("Schedule image uploaded!");
     }
   };
 
   const removeImage = (idx) => {
-    handleScheduleChange(idx, "image", "");
+    setSchedules((prev) =>
+      prev.map((entry, i) =>
+        i === idx ? { ...entry, image: null } : entry
+      )
+    );
     toast.info("Schedule image removed");
   };
 
@@ -71,7 +144,7 @@ const AddNewEvent = () => {
       date: "",
       location: "",
       description: "",
-      image: "",
+      image: null,
     };
     setSchedules((prev) => [...prev, newSchedule]);
     toast.info("Schedule entry added");
@@ -85,12 +158,8 @@ const AddNewEvent = () => {
   const handleEventImageChange = (e, setter) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setter(reader.result);
-        toast.success(`${setter === setEventImage ? "Event Image" : "Thumbnail"} uploaded!`);
-      };
-      reader.readAsDataURL(file);
+      setter(file);
+      toast.success(`${setter === setEventImage ? "Event Banner" : "Thumbnail"} uploaded!`);
     }
   };
 
@@ -102,18 +171,18 @@ const AddNewEvent = () => {
   const handleSpeakerImage = (e, idx) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleSpeakerChange(idx, "image", reader.result);
-        toast.success("Speaker image uploaded!");
-      };
-      reader.readAsDataURL(file);
+      setSpeakers((prev) =>
+        prev.map((speaker, i) =>
+          i === idx ? { ...speaker, image: file } : speaker
+        )
+      );
+      toast.success("Speaker image uploaded!");
     }
   };
 
   const handleSpeakerChange = (idx, field, value) => {
     const updated = [...speakers];
-    if (field === "bio" && value.length > 200) return;
+    if (field === "description" && value.length > 500) return;
     updated[idx][field] = value;
     setSpeakers(updated);
   };
@@ -122,68 +191,31 @@ const AddNewEvent = () => {
     let newSpeaker;
     switch (type) {
       case "Speaker":
-        newSpeaker = { type, name: "", role: "", bio: "", link: "", image: "" };
-        break;
       case "Chief Guest":
-        newSpeaker = {
-          type,
-          name: "",
-          designation: "",
-          intro: "",
-          link: "",
-          image: "",
-        };
+        newSpeaker = { type, name: "", role: "", description: "", email: "", image: null };
         break;
       case "Keynote":
-        newSpeaker = {
-          type,
-          title: "",
-          speakerName: "",
-          description: "",
-          image: "",
-        };
-        break;
       case "Announcements":
-        newSpeaker = { type, title: "", message: "", date: "", image: "" };
+        newSpeaker = { type, title: "", description: "", image: null };
         break;
       case "Workshop":
-        newSpeaker = {
-          type,
-          title: "",
-          facilitator: "",
-          description: "",
-          schedule: "",
-          image: "",
-        };
+        newSpeaker = { type, title: "", facilitator: "", description: "", image: null };
         break;
       case "Discussion":
-        newSpeaker = {
-          type,
-          title: "",
-          moderator: "",
-          topic: "",
-          panelists: "",
-          image: "",
-        };
+        newSpeaker = { type, title: "", moderator: "", panelists: "", description: "", image: null };
         break;
       case "Custom":
-        newSpeaker = {
-          type,
-          customType: "",
-          title: "",
-          description: "",
-          image: "",
-        };
+        newSpeaker = { type, customType: "", title: "", description: "", image: null };
         break;
       default:
         return;
     }
     setSpeakers((prev) => [...prev, newSpeaker]);
-    toast.info("Speaker added");
+    toast.info(`${type} added`);
   };
 
   const deleteSpeaker = (idx) => {
-    setSpeakers(speakers.filter((_, i) => i !== idx));
+    setSpeakers((prev) => prev.filter((_, i) => i !== idx));
     toast.info("Speaker removed");
   };
 
@@ -205,21 +237,104 @@ const AddNewEvent = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = "Event name is required";
+    if (!formData.eventName) newErrors.eventName = "Event name is required";
     if (!formData.category) newErrors.category = "Category is required";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.description) newErrors.description = "Description is required";
-    if (!registrationData.instructions && (registrationData.requireResume || registrationData.requireCoverLetter || registrationData.requirePortfolio || registrationData.customFields?.length > 0)) {
+    if (!formData.location) newErrors.location = "Location is required";
+    if (formData.eventMode === "physical" && !formData.capacity) {
+      newErrors.capacity = "Capacity is required for physical events";
+    }
+    if (!formData.organizer) newErrors.organizer = "Organizer name is required";
+    if (!formData.eventContact.email) newErrors.eventContact = { email: "Contact email is required" };
+    if (
+      (registrationData.requireResume ||
+        registrationData.requireCoverLetter ||
+        registrationData.requirePortfolio ||
+        registrationData.requireBasicInfo ||
+        registrationData.requireWebLink ||
+        registrationData.customQuestions?.length > 0) &&
+      !registrationData.instructions
+    ) {
       newErrors.instructions = "Instructions are required when additional registration fields are specified";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const prepareEventData = () => {
+    const [year, month, day] = formData.date.split("-");
+    return {
+      eventName: formData.eventName,
+      tagline: formData.tagline,
+      category: formData.category,
+      tags: formData.tags || [],
+      date: day,
+      month,
+      year,
+      location: formData.location,
+      capacity: formData.eventMode === "physical" ? parseInt(formData.capacity) || null : null,
+      eventMode: formData.eventMode,
+      bannerImage: eventImage,
+      thumbnailImage: thumbnail,
+      description: formData.description,
+      highlights: [
+        ...schedules.map((schedule) => ({
+          type: "Schedule",
+          title: schedule.title,
+          description: schedule.description,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          date: schedule.date,
+          location: schedule.location,
+          image: schedule.image,
+        })),
+        ...speakers.map((speaker) => ({
+          type: speaker.type,
+          title: speaker.title || null,
+          description: speaker.description || null,
+          name: speaker.name || null,
+          role: speaker.role || null,
+          email: speaker.email || null,
+          image: speaker.image || null,
+          facilitator: speaker.facilitator || null,
+          moderator: speaker.moderator || null,
+          panelists: speaker.panelists || null,
+          customType: speaker.customType || null,
+        })),
+      ],
+      faqs,
+      sponsors: formData.sponsors.map((sponsor) => ({
+        name: sponsor.name,
+        logo: sponsor.logo,
+      })),
+      organizer: formData.organizer,
+      eventContact: formData.eventContact,
+      whoAreWe: null,
+      status: "draft",
+      totalRegistrations: 0,
+      registeredUsers: [],
+      requireResume: registrationData.requireResume,
+      allowedFileTypes: registrationData.allowedFileTypes || [],
+      requireBasicInfo: registrationData.requireBasicInfo,
+      requiredBasicInfo: registrationData.requiredBasicInfo || [],
+      requireWebLink: registrationData.requireWebLink,
+      requiredWebLinks: registrationData.requiredWebLinks || [],
+      requireCoverLetter: registrationData.requireCoverLetter,
+      requirePortfolio: registrationData.requirePortfolio,
+      customQuestions: registrationData.customQuestions,
+      instructions: registrationData.instructions,
+    };
+  };
+
   const saveDraft = () => {
     if (validateForm()) {
-      localStorage.setItem("eventDraft", JSON.stringify({ formData, eventImage, thumbnail, schedules, speakers, faqs, registrationData }));
-      toast.success("Event saved as draft!");
+      const eventData = prepareEventData();
+      dispatch(createEvent({ ...eventData, status: "draft" }));
+      localStorage.setItem(
+        "eventDraft",
+        JSON.stringify({ formData, eventImage, thumbnail, schedules, speakers, faqs, registrationData })
+      );
     } else {
       toast.error("Please fill all required fields");
     }
@@ -227,14 +342,13 @@ const AddNewEvent = () => {
 
   const publishEvent = () => {
     if (validateForm()) {
-      console.log("Publishing event:", { formData, eventImage, thumbnail, schedules, speakers, faqs, registrationData });
-      toast.success("Event published!");
+      const eventData = prepareEventData();
+      dispatch(createEvent({ ...eventData, status: "published" }));
     } else {
       toast.error("Please fill all required fields");
     }
   };
 
-  // SVG for Save Icon
   const SaveIcon = () => (
     <svg
       className="w-4 h-4 mr-2 text-white"
@@ -251,7 +365,6 @@ const AddNewEvent = () => {
     </svg>
   );
 
-  // SVG for Publish Icon
   const PublishIcon = () => (
     <svg
       className="w-4 h-4 mr-2 text-white"
@@ -268,7 +381,6 @@ const AddNewEvent = () => {
     </svg>
   );
 
-  // SVG for Cancel Icon
   const CancelIcon = () => (
     <svg
       className="w-4 h-4 mr-2 text-white"
@@ -296,9 +408,10 @@ const AddNewEvent = () => {
             onClick={saveDraft}
             className="btn-primary flex items-center px-4 py-2"
             title="Save as Draft"
+            disabled={loading}
           >
             <SaveIcon />
-            Save Draft
+            {loading ? "Saving..." : "Save Draft"}
           </button>
         </div>
       </div>
@@ -337,10 +450,10 @@ const AddNewEvent = () => {
         deleteSpeaker={deleteSpeaker}
       />
       <SponsersAndOrganizers
-            formData={formData}
-            handleInputChange={handleInputChange}
-            errors={errors}
-          />
+        formData={formData}
+        handleInputChange={handleInputChange}
+        errors={errors}
+      />
       <FAQ
         faqs={faqs}
         handleFaqChange={handleFaqChange}
@@ -357,6 +470,7 @@ const AddNewEvent = () => {
         <button
           onClick={() => toast.info("Cancelled")}
           className="btn-secondary flex items-center px-6 py-2"
+          disabled={loading}
         >
           <CancelIcon />
           Cancel
@@ -364,9 +478,10 @@ const AddNewEvent = () => {
         <button
           onClick={publishEvent}
           className="btn-primary flex items-center px-6 py-2"
+          disabled={loading}
         >
           <PublishIcon />
-          Publish Event
+          {loading ? "Publishing..." : "Publish Event"}
         </button>
       </div>
     </div>

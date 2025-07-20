@@ -5,7 +5,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
   const [showCustomTagInput, setShowCustomTagInput] = useState(false);
   const [customTag, setCustomTag] = useState('');
 
-  // SVG for Keyboard Icon
   const KeyboardIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -22,7 +21,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Layer Group Icon
   const LayerGroupIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -38,7 +36,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Calendar Icon
   const CalendarIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -57,7 +54,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Map Marker Icon
   const MapMarkerIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -74,7 +70,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Users Icon (for Holding Capacity)
   const UsersIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -93,7 +88,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
     </svg>
   );
 
-  // SVG for Tags Icon
   const TagsIcon = () => (
     <svg
       className="text-[var(--border-accent)] w-5 h-5 mr-2"
@@ -109,10 +103,6 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
       <line x1="7" y1="7" x2="7.01" y2="7" />
     </svg>
   );
-
-  const handleChangeWithToast = (e) => {
-    handleInputChange(e);
-  };
 
   const handleTagChange = (tag) => {
     const tags = Array.isArray(formData.tags) ? formData.tags : [];
@@ -141,14 +131,13 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
       <h3 className="text-lg font-semibold text-white mb-6">Basic Information</h3>
 
       <div className="space-y-6">
-        {/* Name and Category Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
             <KeyboardIcon />
             <input
-              name="name"
-              value={formData.name}
-              onChange={handleChangeWithToast}
+              name="eventName"
+              value={formData.eventName || ''}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
               placeholder="Enter event name"
               aria-label="Event name"
@@ -158,8 +147,8 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
             <LayerGroupIcon />
             <select
               name="category"
-              value={formData.category}
-              onChange={handleChangeWithToast}
+              value={formData.category || ''}
+              onChange={handleInputChange}
               className="w-full p-3 bg-sub-dark text-white transition-all duration-200 appearance-none"
               aria-label="Event category"
             >
@@ -183,19 +172,18 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-1">
-          {errors.name && <p className="text-red-500 text-sm animate-fadeIn">{errors.name}</p>}
+          {errors.eventName && <p className="text-red-500 text-sm animate-fadeIn">{errors.eventName}</p>}
           {errors.category && <p className="text-red-500 text-sm animate-fadeIn">{errors.category}</p>}
         </div>
 
-        {/* Type (Radio) */}
         <div className="flex items-center gap-6">
           <label className="flex items-center text-gray cursor-pointer">
             <input
               type="radio"
-              name="type"
-              value="Physical"
-              checked={formData.type === 'Physical'}
-              onChange={handleChangeWithToast}
+              name="eventMode"
+              value="physical"
+              checked={formData.eventMode === 'physical'}
+              onChange={handleInputChange}
               className="mr-2 accent-[var(--border-accent)] focus:ring-[var(--border-accent)]"
               aria-label="Physical event"
             />
@@ -204,27 +192,26 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
           <label className="flex items-center text-gray cursor-pointer">
             <input
               type="radio"
-              name="type"
-              value="Virtual"
-              checked={formData.type === 'Virtual'}
-              onChange={handleChangeWithToast}
+              name="eventMode"
+              value="virtual"
+              checked={formData.eventMode === 'virtual'}
+              onChange={handleInputChange}
               className="mr-2 accent-[var(--border-accent)] focus:ring-[var(--border-accent)]"
               aria-label="Virtual event"
             />
             Virtual
           </label>
         </div>
-        {errors.type && <p className="text-red-500 text-sm animate-fadeIn">{errors.type}</p>}
+        {errors.eventMode && <p className="text-red-500 text-sm animate-fadeIn">{errors.eventMode}</p>}
 
-        {/* Date, Location, and Holding Capacity Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
             <CalendarIcon />
             <input
               type="date"
               name="date"
-              value={formData.date}
-              onChange={handleChangeWithToast}
+              value={formData.date || ''}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white transition-all duration-200"
               aria-label="Event date"
             />
@@ -233,21 +220,21 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
             <MapMarkerIcon />
             <input
               name="location"
-              value={formData.location}
-              onChange={handleChangeWithToast}
+              value={formData.location || ''}
+              onChange={handleInputChange}
               className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
               placeholder="Enter location or meeting link"
               aria-label="Event location or meeting link"
             />
           </div>
-          {formData.type === 'Physical' && (
+          {formData.eventMode === 'physical' && (
             <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
               <UsersIcon />
               <input
                 type="number"
-                name="holdingCapacity"
-                value={formData.holdingCapacity || ''}
-                onChange={handleChangeWithToast}
+                name="capacity"
+                value={formData.capacity || ''}
+                onChange={handleInputChange}
                 min="1"
                 className="w-full p-3 bg-transparent text-white placeholder-gray transition-all duration-200"
                 placeholder="Enter holding capacity"
@@ -259,12 +246,11 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
         <div className="flex flex-col sm:flex-row gap-1">
           {errors.date && <p className="text-red-500 text-sm animate-fadeIn">{errors.date}</p>}
           {errors.location && <p className="text-red-500 text-sm animate-fadeIn">{errors.location}</p>}
-          {formData.type === 'Physical' && errors.holdingCapacity && (
-            <p className="text-red-500 text-sm animate-fadeIn">{errors.holdingCapacity}</p>
+          {formData.eventMode === 'physical' && errors.capacity && (
+            <p className="text-red-500 text-sm animate-fadeIn">{errors.capacity}</p>
           )}
         </div>
 
-        {/* Tags Row */}
         <div className="relative bg-sub-dark rounded-xl border border-[var(--border-accent)]/50 flex items-center px-4 py-2">
           <TagsIcon />
           <div className="w-full">

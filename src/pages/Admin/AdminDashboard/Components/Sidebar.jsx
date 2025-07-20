@@ -8,7 +8,6 @@ const Sidebar = () => {
 
   const navItems = [
     { to: '/admin/dashboard', label: 'Dashboard' },
-    { to: '/admin/notifications', label: 'Notifications' },
     { to: '/admin/event-section', label: 'Events' },
     { to: '/admin/blog-section', label: 'Blogs' },
   ];
