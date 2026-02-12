@@ -1,9 +1,9 @@
 import React from 'react';
-import EventsPage from './components/EventsPage';
-import NotificationDropdown from './components/NotificationDropdown';
-import TabButtons from './components/TabButtons';
-import SearchFilters from './components/SearchFilters';
-import EventModal from './components/EventModal';
+import EventsPage from './Components/EventsPage';
+import NotificationDropdown from './Components/NotificationDropdown';
+import TabButtons from './Components/TabButtons';
+import SearchFilters from './Components/SearchFilters';
+import EventModal from './Components/EventModal';
 import Sidebar from '../Components/Sidebar';
 import EventCard from '../Components/EventCard';
 
