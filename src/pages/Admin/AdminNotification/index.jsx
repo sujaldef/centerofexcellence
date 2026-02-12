@@ -1,8 +1,8 @@
 import React from 'react';
 import Sidebar from '../AdminDashboard/Components/Sidebar';
-import NotificationHeader from './components/NotificationHeader';
-import QuestionList from './components/QuestionList';
-import SuggestionList from './components/SuggestionList';
+import NotificationHeader from './Components/NotificationHeader';
+import QuestionList from './Components/QuestionList';
+import SuggestionList from './Components/SuggestionList';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
