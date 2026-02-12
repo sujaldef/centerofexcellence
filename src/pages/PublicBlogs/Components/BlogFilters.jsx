@@ -1,51 +1,79 @@
 import React from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { Search, Filter, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const BlogFilters = ({ searchQuery, setSearchQuery, categoryFilter, setCategoryFilter, sortBy, setSortBy }) => {
+  
+  // Shared class for all inputs to ensure perfect alignment
+  const inputBaseClass = "w-full bg-[#0a0a12] border border-white/10 text-gray-300 text-sm rounded-lg focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all shadow-sm hover:bg-white/5";
+
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-      <div className="relative w-full sm:w-64">
-        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray" />
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col md:flex-row gap-3 mb-8"
+    >
+      {/* Search Input - Flexible Width */}
+      <div className="relative w-full md:flex-1 group">
+        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+          <Search size={14} className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+        </div>
         <input
           type="text"
-          placeholder="Search blogs..."
+          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg bg-sub-dark border border-[var(--border-accent)] text-white placeholder:text-gray focus:outline-none"
-          aria-label="Search blogs"
+          className={`${inputBaseClass} pl-9 pr-3 py-2`}
         />
       </div>
-      <div className="flex gap-4 w-full sm:w-auto">
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-sub-dark border border-[var(--border-accent)] text-white rounded-lg px-3 py-2 focus:outline-none text-small w-full sm:w-48"
-          aria-label="Filter blog categories"
-        >
-          <option value="">All Categories</option>
-          <option value="Tech">Tech</option>
-          <option value="AI">AI</option>
-          <option value="Web3">Web3</option>
-          <option value="Blockchain">Blockchain</option>
-          <option value="Culture">Culture</option>
-          <option value="Health">Health</option>
-          <option value="Entrepreneurship">Entrepreneurship</option>
-          <option value="Environment">Environment</option>
-科普        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="bg-sub-dark border border-[var(--border-accent)] text-white rounded-lg px-3 py-2 focus:outline-none text-small w-full sm:w-48"
-          aria-label="Sort blogs"
-        >
-          <option value="">Sort By</option>
-          <option value="date_newest">Date: Newest First</option>
-          <option value="date_oldest">Date: Oldest First</option>
-          <option value="title_asc">Title: A-Z</option>
-          <option value="title_desc">Title: Z-A</option>
-        </select>
+
+      {/* Filter & Sort - Compact Row */}
+      <div className="flex gap-3 w-full md:w-auto">
+        
+        {/* Category Dropdown */}
+        <div className="relative w-full md:w-40 group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <Filter size={14} className="text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+          </div>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className={`${inputBaseClass} pl-9 pr-8 py-2 appearance-none cursor-pointer`}
+          >
+            <option value="">All Topics</option>
+            <option value="Tech">Tech</option>
+            <option value="AI">AI</option>
+            <option value="Web3">Web3</option>
+            <option value="Blockchain">Blockchain</option>
+            <option value="Culture">Culture</option>
+          </select>
+          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-600">
+            <ChevronDown size={12} />
+          </div>
+        </div>
+
+        {/* Sort Dropdown */}
+        <div className="relative w-full md:w-40 group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <ArrowUpDown size={14} className="text-gray-500 group-focus-within:text-pink-400 transition-colors" />
+          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className={`${inputBaseClass} pl-9 pr-8 py-2 appearance-none cursor-pointer`}
+          >
+            <option value="">Sort By</option>
+            <option value="date_newest">Newest</option>
+            <option value="date_oldest">Oldest</option>
+            <option value="title_asc">A-Z</option>
+          </select>
+           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-600">
+            <ChevronDown size={12} />
+          </div>
+        </div>
+
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -97,7 +97,6 @@ const App = () => {
           id="trail-canvas"
           className="fixed top-0 left-0 w-full h-full z-[9998] pointer-events-none"
         ></canvas>
-        <div className="custom-cursor fixed rounded-full pointer-events-none transform -translate-x-1/2 -translate-y-1/2 z-[9999] transition-all duration-300 ease-out overflow-x-auto scrollbar-hide"></div>
         <Navbar />
         <main className="flex-grow">
           <Routes>

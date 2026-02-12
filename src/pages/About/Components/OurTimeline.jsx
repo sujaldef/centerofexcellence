@@ -39,40 +39,50 @@ const timelineSteps = [
 
 const OurTimeline = () => {
   const sectionRef = useRef(null);
+  const timelineWrapperRef = useRef(null);
   const timelineRef = useRef(null);
   const timelineItemsRef = useRef([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Horizontal scroll animation
-      gsap.to(timelineRef.current, {
-        x: () => -(timelineRef.current.scrollWidth - window.innerWidth / 2),
+      // 1. Calculate the exact distance to scroll
+      // We need to scroll the full width of the content minus the width of the visible window (the 60% on the right)
+      const getScrollAmount = () => {
+        const timelineWidth = timelineRef.current.scrollWidth;
+        const wrapperWidth = timelineWrapperRef.current.clientWidth;
+        return -(timelineWidth - wrapperWidth + 100); // +100 for some right-side padding breathing room
+      };
+
+      const tween = gsap.to(timelineRef.current, {
+        x: getScrollAmount,
         ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: () => `+=${timelineRef.current.scrollWidth}`,
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-        },
+      });
+
+      // Horizontal scroll animation
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: 'top top',
+        end: () => `+=${timelineRef.current.scrollWidth}`, // Scroll duration based on content length
+        pin: true,
+        animation: tween,
+        scrub: 1,
+        invalidateOnRefresh: true, // Recalculate on resize (crucial for big screens)
       });
 
       // Fade-in animation for each item
-      timelineItemsRef.current.forEach((item, index) => {
+      timelineItemsRef.current.forEach((item) => {
         gsap.from(item, {
           opacity: 0,
-          x: 100,
+          scale: 0.8, // Added slight scale for smoother entrance on big screens
           duration: 1,
           ease: 'power2.out',
           scrollTrigger: {
             trigger: item,
-            start: 'left 80%',
-            end: 'center 80%',
-            scrub: 1,
-            containerAnimation: gsap.to(timelineRef.current, {
-              x: () => -(timelineRef.current.scrollWidth - window.innerWidth / 2),
-            }),
+            containerAnimation: tween,
+            start: 'left 90%', // Trigger slightly earlier so it doesn't feel empty
+            end: 'center 60%',
+            scrub: true,
+            toggleActions: 'play none none reverse',
           },
         });
       });
@@ -82,23 +92,36 @@ const OurTimeline = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen bg-[#0a0a1a] text-white overflow-hidden">
-      {/* Fixed Sidebar with vertical text */}
-      <div className="fixed top-0 left-0 h-screen w-[40%] flex items-center justify-center bg-[#0a0a1a] z-10">
+    <section 
+      ref={sectionRef} 
+      className="relative h-screen w-full bg-[#0a0a1a] text-white overflow-hidden flex"
+    >
+      {/* SIDEBAR: Changed from fixed to absolute/relative. 
+        Because the parent section is PINNED, this acts as fixed visual 
+        but won't break out of the container on large screens.
+      */}
+      <div className="absolute top-0 left-0 h-full w-[40%] flex items-center justify-center bg-[#0a0a1a] z-10 border-r border-gray-800/30">
         <div className="flex flex-col items-center">
-          <h1 className="text-6xl font-bold text-white">OUR</h1>
-          <h1 className="text-6xl font-bold text-white">TIMELINE</h1>
+          <h1 className="text-6xl font-bold text-white tracking-wider">OUR</h1>
+          <h1 className="text-6xl font-bold text-white tracking-wider">TIMELINE</h1>
         </div>
       </div>
 
-      {/* Timeline Content */}
-      <div className="relative ml-[40%] py-20">
-        {/* Fixed Middle Line with Icon */}
-        <div className="fixed top-1/2 left-[40%] right-0 transform -translate-y-1/2 flex items-center">
-          <div className="h-[2px] bg-gray-600 w-full"></div>
-          <div className="absolute left-1/2 transform -translate-x-1/2 bg-[#0a0a1a] px-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L12 22M2 12L22 12M4.93 4.93L19.07 19.07M4.93 19.07L19.07 4.93" stroke="url(#grad)" strokeWidth="2"/>
+      {/* CONTENT WRAPPER: Occupies the right 60% 
+      */}
+      <div 
+        ref={timelineWrapperRef}
+        className="absolute top-0 right-0 h-full w-[60%] overflow-hidden"
+      >
+        {/* The Center Line - Positioned Absolute relative to the wrapper, not the screen */}
+        <div className="absolute top-1/2 left-0 w-full transform -translate-y-1/2 z-0">
+           <div className="h-[2px] bg-gray-700 w-full"></div>
+        </div>
+
+        {/* The Icon - Fixed center of the wrapper */}
+        <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1/2 z-20 bg-[#0a0a1a] p-2 rounded-full border border-gray-800">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L12 22M2 12L22 12M4.93 4.93L19.07 19.07M4.93 19.07L19.07 4.93" stroke="url(#grad)" strokeWidth="2" />
               <defs>
                 <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" style={{ stopColor: '#FF69B4', stopOpacity: 1 }} />
@@ -107,27 +130,32 @@ const OurTimeline = () => {
                 </linearGradient>
               </defs>
             </svg>
-          </div>
         </div>
 
-        {/* Timeline Items */}
-        <div ref={timelineRef} className="flex items-center space-x-32">
+        {/* The Moving Timeline Strip */}
+        <div 
+          ref={timelineRef} 
+          className="flex items-center h-full pl-20 pr-40 space-x-32 w-max"
+        >
           {timelineSteps.map((step, index) => (
             <div
               key={index}
               ref={(el) => (timelineItemsRef.current[index] = el)}
-              className={`flex flex-col items-center w-[400px] min-w-[400px] ${
-                step.position === 'above' ? 'mb-60' : 'mt-80'
+              className={`flex flex-col items-start w-[400px] min-w-[400px] relative z-10 ${
+                step.position === 'above' ? '-mt-64' : 'mt-64'
               }`}
             >
-              <div className="flex items-center mb-6">
-                <span className="text-7xl font-bold bg-clip-text text-purple-600">
+              {/* Connected Dot to Line */}
+              <div className={`absolute left-10 w-[2px] h-20 bg-gray-700 ${step.position === 'above' ? '-bottom-20' : '-top-20'}`}></div>
+              
+              <div className="flex items-center mb-4">
+                <span className="text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
                   {step.number}
                 </span>
-                <h2 className="text-4xl font-bold ml-6">{step.title}</h2>
+                <h2 className="text-3xl font-bold ml-6 leading-tight">{step.title}</h2>
               </div>
-              <p className="text-gray-400 text-center mb-4">{step.description}</p>
-              <p className="text-lg text-gray-500">{step.date}</p>
+              <p className="text-gray-400 mb-2 text-lg">{step.description}</p>
+              <p className="text-sm font-mono text-cyan-400">{step.date}</p>
             </div>
           ))}
         </div>
