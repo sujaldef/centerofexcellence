@@ -1,152 +1,127 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
+import { FiPlus, FiX, FiCpu, FiHash } from 'react-icons/fi'; // Icons for context
 import { updateUser } from '../../../../redux/slices/userSlice';
 
-const SkillsInterests = ({ initialSkills = ['Machine Learning', 'Web Development', 'UI/UX Design'], initialInterests = ['Programming', 'Design', 'AI/ML'], userId }) => {
+const SkillsInterests = ({ initialSkills = [], initialInterests = [], userId }) => {
   const [skills, setSkills] = useState(initialSkills);
   const [interests, setInterests] = useState(initialInterests);
-  const [newSkill, setNewSkill] = useState('');
-  const [newInterest, setNewInterest] = useState('');
-  const [addingSkill, setAddingSkill] = useState(false);
-  const [addingInterest, setAddingInterest] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  
+  // Single handler for adding items to keep code DRY
   const dispatch = useDispatch();
 
-  const handleAddItem = async (type, value, setItems, setInput, setAdding) => {
-    const trimmedValue = value.trim();
-    if (!trimmedValue) {
-      setError(`${type} cannot be empty`);
-      return;
-    }
-    if (type === 'Skill' && skills.includes(trimmedValue)) {
-      setError('Skill already exists');
-      return;
-    }
-    if (type === 'Interest' && interests.includes(trimmedValue)) {
-      setError('Interest already exists');
-      return;
-    }
-    if (!userId || !/^[0-9a-fA-F]{24}$/.test(userId)) {
-      setError('Cannot save changes: User ID is invalid or missing.');
-      return;
-    }
-
-    const updatedItems = [...(type === 'Skill' ? skills : interests), trimmedValue];
-    setItems(updatedItems);
-    setInput('');
-    setAdding(false);
-    setSuccess(`${type} added successfully!`);
-    setError('');
-    setTimeout(() => setSuccess(''), 3000);
-
+  const handleUpdate = async (type, newItems) => {
+    if (!userId) return; // Add error handling toast here if needed
+    
     try {
-      const userData = type === 'Skill' ? { skills: updatedItems } : { interests: updatedItems };
+      const userData = type === 'Skill' ? { skills: newItems } : { interests: newItems };
       await dispatch(updateUser({ userId, userData })).unwrap();
     } catch (error) {
-      console.error(`Error updating ${type.toLowerCase()}:`, error);
-      setError(`Failed to save ${type.toLowerCase()}: ${error}`);
-      setItems(type === 'Skill' ? skills : interests); // Revert on error
+      console.error("Update failed", error);
+      // Revert logic would go here in a full app
     }
   };
 
-  const handleRemoveItem = async (index, setItems, type) => {
-    if (!userId || !/^[0-9a-fA-F]{24}$/.test(userId)) {
-      setError('Cannot save changes: User ID is invalid or missing.');
-      return;
-    }
+  return (
+    <section className="px-6 mb-8 w-full max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TagSection 
+          title="Technical Skills" 
+          icon={FiCpu}
+          items={skills} 
+          setItems={setSkills} 
+          onUpdate={(items) => handleUpdate('Skill', items)}
+          placeholder="Add a skill (e.g. React)..."
+        />
+        <TagSection 
+          title="Areas of Interest" 
+          icon={FiHash}
+          items={interests} 
+          setItems={setInterests} 
+          onUpdate={(items) => handleUpdate('Interest', items)}
+          placeholder="Add an interest (e.g. AI)..."
+        />
+      </div>
+    </section>
+  );
+};
 
-    const updatedItems = (type === 'Skill' ? skills : interests).filter((_, i) => i !== index);
-    setItems(updatedItems);
-    setSuccess('Item removed successfully!');
-    setTimeout(() => setSuccess(''), 3000);
+// --- Sub-Component: Tag Manager ---
 
-    try {
-      const userData = type === 'Skill' ? { skills: updatedItems } : { interests: updatedItems };
-      await dispatch(updateUser({ userId, userData })).unwrap();
-    } catch (error) {
-      console.error(`Error updating ${type.toLowerCase()}:`, error);
-      setError(`Failed to save ${type.toLowerCase()}: ${error}`);
-      setItems(type === 'Skill' ? skills : interests); // Revert on error
+const TagSection = ({ title, icon: Icon, items, setItems, onUpdate, placeholder }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const addItem = () => {
+    const val = inputValue.trim();
+    if (val && !items.includes(val)) {
+      const newItems = [...items, val];
+      setItems(newItems);
+      onUpdate(newItems);
+      setInputValue('');
     }
   };
 
-  const handleKeyDown = (e, type, value, setItems, setInput, setAdding) => {
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
+    onUpdate(newItems);
+  };
+
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddItem(type, value, setItems, setInput, setAdding);
-    } else if (e.key === 'Escape') {
-      setInput('');
-      setAdding(false);
+      addItem();
     }
   };
 
-  const renderSection = (title, items, setItems, adding, setAdding, newItem, setNewItem, type) => (
-    <div className="flex-1 min-w-[300px]">
-      <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
-      <div className="flex flex-wrap gap-2 mb-2">
+  return (
+    <div className="bg-[#0a0a1a] border border-white/10 rounded-xl p-6 flex flex-col h-full shadow-lg">
+      
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+        <div className="p-2 bg-white/5 rounded-lg text-purple-400">
+          <Icon size={18} />
+        </div>
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest">{title}</h3>
+        <span className="ml-auto text-xs text-gray-500 font-mono">{items.length} ITEMS</span>
+      </div>
+
+      {/* Tags Container */}
+      <div className="flex flex-wrap gap-2 mb-4">
         {items.map((item, index) => (
-          <span
-            key={`${item}-${index}`}
-            className="tooltip-wrapper flex items-center bg-sub-dark px-3 py-1 rounded-full text-gray border border-[var(--border-accent)] card"
-            role="button"
-            aria-label={`Remove ${item}`}
+          <span 
+            key={`${item}-${index}`} 
+            className="group flex items-center gap-2 pl-3 pr-2 py-1.5 bg-[#151520] border border-white/10 text-gray-300 text-sm rounded-md transition-all hover:border-purple-500/50 hover:text-white"
           >
             {item}
             <button
-              type="button"
-              onClick={() => handleRemoveItem(index, setItems, type)}
-              className="ml-2 text-gray hover:text-red-400 transition duration-200 text-sm"
+              onClick={() => removeItem(index)}
+              className="p-0.5 rounded-md text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
               aria-label={`Remove ${item}`}
             >
-              ×
+              <FiX size={14} />
             </button>
-            <span className="tooltip">Click to remove {item}</span>
           </span>
         ))}
       </div>
-      {adding ? (
+
+      {/* Input Area (Pinned to bottom logic if needed, but here flows naturally) */}
+      <div className="mt-auto pt-2 relative group">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-500 transition-colors">
+          <FiPlus size={16} />
+        </div>
         <input
           type="text"
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          onBlur={() => handleAddItem(type, newItem, setItems, setNewItem, setAdding)}
-          onKeyDown={(e) => handleKeyDown(e, type, newItem, setItems, setNewItem, setAdding)}
-          className="mt-2 w-full bg-sub-dark border border-[var(--border-accent)] text-white px-3 py-1 rounded-md outline-none focus:ring-2 focus:ring-[var(--primary-color)] placeholder-gray"
-          placeholder={`Enter a new ${type.toLowerCase()}`}
-          autoFocus
-          aria-label={`Enter new ${type.toLowerCase()}`}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={addItem}
+          placeholder={placeholder}
+          className="w-full bg-[#0f0f16] text-gray-200 text-sm py-3 pl-10 pr-4 rounded-lg border border-white/5 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 focus:outline-none transition-all placeholder-gray-600"
         />
-      ) : (
-        <button
-          onClick={() => setAdding(true)}
-          className="mt-2 text-[var(--primary-color)] hover:text-[var(--primary-hover)] transition duration-200 text-sm"
-          aria-label={`Add new ${type.toLowerCase()}`}
-        >
-          + Add {type}
-        </button>
-      )}
-    </div>
-  );
-
-  return (
-    <section className="p-6 bg-dark text-white" aria-label="Skills and Interests">
-      {error && (
-        <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-lg text-sm" role="alert">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 p-3 bg-green-900/50 text-green-300 rounded-lg text-sm" role="alert">
-          {success}
-        </div>
-      )}
-      <div className="flex flex-wrap gap-6">
-        {renderSection('Your Skills', skills, setSkills, addingSkill, setAddingSkill, newSkill, setNewSkill, 'Skill')}
-        {renderSection('Your Interests', interests, setInterests, addingInterest, setAddingInterest, newInterest, setNewInterest, 'Interest')}
       </div>
-    </section>
+    </div>
   );
 };
 
@@ -154,12 +129,6 @@ SkillsInterests.propTypes = {
   initialSkills: PropTypes.arrayOf(PropTypes.string),
   initialInterests: PropTypes.arrayOf(PropTypes.string),
   userId: PropTypes.string,
-};
-
-SkillsInterests.defaultProps = {
-  initialSkills: ['Machine Learning', 'Web Development', 'UI/UX Design'],
-  initialInterests: ['Programming', 'Design', 'AI/ML'],
-  userId: null,
 };
 
 export default SkillsInterests;

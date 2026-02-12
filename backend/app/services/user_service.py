@@ -2,7 +2,8 @@ from fastapi import HTTPException
 from db import db_client
 from bson.objectid import ObjectId
 from app.models.user_model import User
-from passlib.hash import bcrypt
+from app.core.security import verify_password
+
 from datetime import datetime
 import logging
 
@@ -11,30 +12,26 @@ logger = logging.getLogger(__name__)
 async def create_user(user_data: dict) -> str:
     try:
         collection = db_client["centerofexcellence"]["user"]
-        user = User(**user_data)
-        user_dict = user.dict(by_alias=True, exclude_unset=True, exclude={"id"})
-        current_time = datetime.utcnow()
-        user_dict["createdAt"] = current_time
-        user_dict["updatedAt"] = current_time
+
+        user_data["createdAt"] = datetime.utcnow()
+        user_data["updatedAt"] = datetime.utcnow()
+
         existing_user = await collection.find_one({
             "$or": [
-                {"email": user_dict.get("email")},
-                {"username": user_dict.get("username")}
+                {"email": user_data.get("email")},
+                {"username": user_data.get("username")}
             ]
         })
+
         if existing_user:
-            logger.error(f"User already exists with email {user_dict.get('email')} or username {user_dict.get('username')}")
             raise HTTPException(status_code=400, detail="Email or username already exists")
-        logger.info(f"Creating user with data: {user_dict}")
-        result = await collection.insert_one(user_dict)
-        logger.info(f"Created user with _id: {result.inserted_id}")
+
+        result = await collection.insert_one(user_data)
         return str(result.inserted_id)
-    except ValueError as ve:
-        logger.error(f"Validation error: {str(ve)}")
-        raise HTTPException(status_code=400, detail=f"Invalid user data: {str(ve)}")
+
     except Exception as e:
         logger.error(f"Error creating user: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error creating user")
 
 async def get_user_by_id(user_id: str) -> dict:
     try:
@@ -82,7 +79,8 @@ async def update_user(user_id: str, user_data: dict) -> dict:
             logger.error(f"User not found: {user_id}")
             raise HTTPException(status_code=404, detail="User not found")
         if "password" in user_data:
-            user_data["password"] = bcrypt.hash(user_data["password"])
+             if not user_data["password"].startswith("$2"):
+                user_data["password"] = hash_password(user_data["password"])
         if "eventsRegistered" in user_data:
             logger.info(f"Updating eventsRegistered for user {user_id}: {user_data['eventsRegistered']}")
             for registration in user_data["eventsRegistered"]:

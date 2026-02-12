@@ -1,107 +1,65 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { FiCalendar, FiCheckCircle, FiActivity } from 'react-icons/fi';
 
-const EVENT_STATS = [
-  { icon: "📝", value: "12", label: "Events Registered" },
-  { icon: "✅", value: "8", label: "Events Attended" },
-  { icon: "🚀", value: "3", label: "Active Applications" }
+const STATS_DATA = [
+  { 
+    id: 'registered',
+    icon: FiCalendar, 
+    value: "12", 
+    label: "Events Registered", 
+    color: "text-blue-400",
+    bg: "bg-blue-400/10"
+  },
+  { 
+    id: 'attended',
+    icon: FiCheckCircle, 
+    value: "8", 
+    label: "Events Attended", 
+    color: "text-green-400",
+    bg: "bg-green-400/10"
+  },
+  { 
+    id: 'active',
+    icon: FiActivity, 
+    value: "3", 
+    label: "Active Applications", 
+    color: "text-purple-400",
+    bg: "bg-purple-400/10"
+  }
 ];
 
 const EventStats = () => {
   return (
-    <section className="px-6 mb-6" aria-label="Event Statistics">
-      <style>
-        {`
-          .shiny-card {
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease, filter 0.3s ease;
-          }
-          .shiny-card:hover {
-            transform: scale(1.02);
-            filter: brightness(1.05);
-          }
-          .shiny-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -100%;
-            width: 50%;
-            height: 200%;
-            background: linear-gradient(
-              to right,
-              transparent,
-              rgba(255, 255, 255, 0.1),
-              transparent
-            );
-            transform: rotate(45deg);
-            animation: shine 6s ease-in-out infinite;
-          }
-          .shiny-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -100%;
-            width: 50%;
-            height: 200%;
-            background: linear-gradient(
-              to right,
-              transparent,
-              rgba(255, 255, 255, 0.2),
-              transparent
-            );
-            transform: rotate(45deg);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-          }
-          .shiny-card:hover::after {
-            opacity: 1;
-            animation: shine-hover 4s ease-in-out infinite;
-          }
-          @keyframes shine {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-          }
-          @keyframes shine-hover {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-          }
-        `}
-      </style>
+    <section className="px-6 mb-8 w-full max-w-7xl mx-auto" aria-label="Event Statistics">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {EVENT_STATS.map((card, index) => (
-          <article
-            key={`${card.label}-${index}`}
-            className="shiny-card bg-[#000000] rounded-xl p-6 shadow-2xl border border-gray-700/30 flex items-center justify-between transition-all duration-300"
-            role="region"
-            aria-label={`${card.label} statistic`}
+        {STATS_DATA.map((stat) => (
+          <div
+            key={stat.id}
+            className="group relative bg-[#0a0a1a] border border-white/10 rounded-xl p-6 flex items-center gap-5 overflow-hidden transition-all duration-300 hover:border-white/20 hover:bg-[#0f0f1f]"
           >
-            <div
-              className="text-purple-400 text-3xl  "
-              aria-hidden="true"
-              dangerouslySetInnerHTML={{ __html: card.icon }}
-            />
-            <div className="text-left">
-              <p className="text-lg font-semibold text-gray-100">{card.value}</p>
-              <p className="text-sm text-gray-400">{card.label}</p>
+            {/* Background Glow on Hover */}
+            <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-[50px] opacity-0 group-hover:opacity-20 transition-opacity duration-500 ${stat.bg.replace('/10', '/50')}`} />
+
+            {/* Icon Box */}
+            <div className={`p-4 rounded-lg ${stat.bg} ${stat.color} border border-white/5`}>
+              <stat.icon size={24} />
             </div>
-          </article>
+
+            {/* Text Content */}
+            <div className="flex flex-col">
+              <span className="text-3xl font-bold text-white font-mono tracking-tight leading-none mb-1">
+                {stat.value}
+              </span>
+              <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
+                {stat.label}
+              </span>
+            </div>
+          </div>
         ))}
       </div>
     </section>
   );
-};
-
-EventStats.propTypes = {
-  stats: PropTypes.arrayOf(
-    PropTypes.shape({
-      icon: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ),
 };
 
 export default EventStats;

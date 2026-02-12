@@ -2,7 +2,9 @@ from fastapi import APIRouter, HTTPException, status, Depends, Header
 from app.services.user_service import create_user, get_user_by_id, get_user_by_name, delete_user, update_user
 from app.models.user_model import User, UserUpdate
 from bson.objectid import ObjectId
-from passlib.hash import bcrypt
+from app.core.security import hash_password
+from app.core.security import verify_password
+
 from pydantic import BaseModel
 import logging
 from app.jwt_handler import verify_token, create_access_token
@@ -80,7 +82,7 @@ async def create_new_user(user: User):
             logger.warning(f"User creation failed: Username {user.username} or email {user.email} already exists")
             raise HTTPException(status_code=400, detail="Username or email already exists")
 
-        hashed_password = bcrypt.hash(user.password)
+        hashed_password = hash_password(user.password)
         user_data = user.dict(exclude_unset=True)
         user_data["password"] = hashed_password
         # Remove _id if present to let MongoDB generate it
@@ -182,7 +184,7 @@ async def login_user(login_data: LoginRequest):
             logger.error(f"User {login_data.identifier} has invalid or missing password field: {password_hash}")
             raise HTTPException(status_code=500, detail="User account is corrupted: invalid password format")
         try:
-            if not bcrypt.verify(login_data.password, password_hash):
+            if not verify_password(login_data.password, password_hash):
                 logger.warning(f"Login failed: Invalid password for identifier: {login_data.identifier}")
                 raise HTTPException(status_code=401, detail="Invalid password")
         except ValueError as ve:

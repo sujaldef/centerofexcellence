@@ -1,19 +1,8 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { FiCamera, FiMapPin, FiX, FiCheck } from 'react-icons/fi';
-import Modal from 'react-modal';
+import { FiCamera, FiMail, FiPhone, FiCalendar, FiUser, FiEdit2, FiCheck, FiX, FiActivity } from 'react-icons/fi';
 import { updateUser } from '../../../../redux/slices/userSlice';
-
-Modal.setAppElement('#root');
-
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
 
 const WelcomeSection = ({
   userName,
@@ -23,270 +12,289 @@ const WelcomeSection = ({
   userDescription,
   profileImage,
   userId,
-  onSearch,
 }) => {
-  const [age, setAge] = useState(userAge);
-  const [phone, setPhone] = useState(userPhone);
-  const [description, setDescription] = useState(userDescription);
-  const [currentProfileImage, setProfileImage] = useState(profileImage);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
   const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
 
-  const debouncedSearch = useCallback(
-    debounce((value) => {
-      if (onSearch) onSearch(value);
-    }, 300),
-    [onSearch]
-  );
+  // Local State
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    age: userAge || '',
+    phone: userPhone || '',
+    description: userDescription || '',
+    profileImage: profileImage || '', // Fallback image if needed
+  });
+  
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-    debouncedSearch(e.target.value);
+  // Sync props to state if they change externally
+  useEffect(() => {
+    setFormData({
+      age: userAge || '',
+      phone: userPhone || '',
+      description: userDescription || '',
+      profileImage: profileImage || '',
+    });
+  }, [userAge, userPhone, userDescription, profileImage]);
+
+  // Handlers
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError('');
   };
 
-  const handleAgeChange = (e) => {
-    setAge(e.target.value);
-  };
-
-  const handlePhoneChange = (e) => {
-    setPhone(e.target.value);
-  };
-
-  const handleImageUpload = () => {
-    fileInputRef.current.click();
-  };
-
-  const handleFileChange = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProfileImage(event.target.result);
+        setFormData((prev) => ({ ...prev, profileImage: event.target.result }));
       };
       reader.readAsDataURL(file);
     } else {
-      setError('Please select a valid image file.');
+      setError('Invalid file format. Please upload an image.');
     }
   };
 
-  const validateInputs = () => {
-    if (age && (isNaN(age) || parseInt(age) <= 0)) {
-      return 'Age must be a positive number.';
-    }
-    if (phone && !/^\d{10}$/.test(phone)) {
-      return 'Phone number must be exactly 10 digits.';
-    }
+  const validate = () => {
+    if (formData.age && (isNaN(formData.age) || parseInt(formData.age) <= 0)) return 'Age must be valid.';
+    if (formData.phone && !/^\d{10}$/.test(formData.phone)) return 'Phone must be 10 digits.';
     return null;
   };
 
   const handleSave = async () => {
-    const validationError = validateInputs();
+    const validationError = validate();
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    if (!userId || !/^[0-9a-fA-F]{24}$/.test(userId)) {
-      setError('Cannot save profile: User ID is invalid or missing.');
+    if (!userId) {
+      setError('User ID missing.');
       return;
     }
 
     try {
-      const userData = {
-        age: age ? parseInt(age) : null,
-        phone: phone || null,
-        description: description || null,
-        profilePic: currentProfileImage,
-      };
-      await dispatch(updateUser({ userId, userData })).unwrap();
+      await dispatch(updateUser({ 
+        userId, 
+        userData: {
+          age: formData.age,
+          phone: formData.phone,
+          description: formData.description,
+          profilePic: formData.profileImage
+        } 
+      })).unwrap();
+      
+      setSuccess('Profile updated.');
       setIsEditMode(false);
-      setError(null);
-    } catch (error) {
-      console.error('Error updating user:', error);
-      setError(error.message || 'Failed to save profile changes.');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Failed to save changes.');
     }
   };
 
-  const toggleEditMode = () => {
-    if (isEditMode) {
-      handleSave();
-    } else {
-      setIsEditMode(true);
-    }
+  const handleCancel = () => {
+    // Revert state
+    setFormData({
+      age: userAge || '',
+      phone: userPhone || '',
+      description: userDescription || '',
+      profileImage: profileImage || '',
+    });
+    setError('');
+    setIsEditMode(false);
   };
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
   return (
-    <section
-      className="p-6 bg-sub-dark text-white rounded-xl shadow-2xl animate-fadeIn"
-      aria-label="Welcome Section"
-    >
-      {error && (
-        <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-lg text-sm" role="alert">
-          {error}
+    <section className="relative w-full p-6 md:p-8 shadow-2xl overflow-hidden mb-6">
+      
+      {/* Background Decor (Subtle Grid) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+
+      {/* Header / Actions */}
+      <div className="flex justify-between items-start mb-6 relative z-10">
+        <div>
+           <h2 className="text-gray-400 text-xs font-mono uppercase tracking-widest mb-1">User Profile</h2>
+           <h1 className="text-2xl font-bold text-white tracking-tight">{userName}</h1>
         </div>
-      )}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-        <div className="relative group">
-          <img
-            src={currentProfileImage}
-            alt={`${userName}'s avatar`}
-            className="w-24 h-24 rounded-full object-cover border-2 border-primary-color cursor-pointer transition-transform"
-            onClick={openModal}
-          />
-          <div className="shine-bg" />
-          {isEditMode && (
-            <div className="tooltip-wrapper">
-              <button
-                onClick={handleImageUpload}
-                className="absolute bottom-0 right-0 w-8 h-8 text-primary-color rounded-full flex items-center justify-center"
-                aria-label="Upload profile image"
+        
+        <div className="flex gap-2">
+          {isEditMode ? (
+            <>
+              <button 
+                onClick={handleCancel}
+                className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                title="Cancel"
               >
-                <FiCamera size={16} />
+                <FiX size={18} />
               </button>
-              <span className="tooltip">Upload Image</span>
-            </div>
-          )}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
-          />
-        </div>
-
-        <div className="flex-1 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-white">{userName}</h1>
-            </div>
-            <button
-              onClick={toggleEditMode}
-              className={`px-4 py-2 ${isEditMode ? 'btn-secondary' : 'btn-primary'}`}
-              aria-label={isEditMode ? 'Save profile' : 'Edit profile'}
+              <button 
+                onClick={handleSave}
+                className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+              >
+                <FiCheck size={18} /> Save
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={() => setIsEditMode(true)}
+              className="p-2 rounded-lg bg-white/5 text-gray-300 hover:bg-white/10 border border-white/5 transition-colors"
+              title="Edit Profile"
             >
-              {isEditMode ? (
-                <>
-                  <FiCheck size={16} /> Save
-                </>
-              ) : (
-                'Edit Profile'
-              )}
+              <FiEdit2 size={18} />
             </button>
-          </div>
-
-          <div>
-            {isEditMode ? (
-              <textarea
-                value={description}
-                onChange={handleDescriptionChange}
-                className="w-full p-2 text-white bg-gray-800 rounded-md border border-primary-color placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-color transition-all"
-                rows="3"
-                placeholder="Enter your description"
-                aria-label="Edit description"
-              />
-            ) : (
-              <p className="text-gray">{description || 'No description set'}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <p className="text-gray flex items-center gap-2">
-              <FiMapPin size={16} /> Email: {userEmail || 'No email set'}
-            </p>
-            {isEditMode ? (
-              <input
-                value={age}
-                onChange={handleAgeChange}
-                type="number"
-                min="1"
-                className="p-2 text-white bg-gray-800 rounded-md border border-primary-color focus:outline-none focus:ring-2 focus:ring-primary-color transition-all"
-                placeholder="Enter your age"
-                aria-label="Edit age"
-              />
-            ) : (
-              <p className="text-gray flex items-center gap-2">
-                <FiMapPin size={16} /> Age: {age || 'No age set'}
-              </p>
-            )}
-            {isEditMode ? (
-              <input
-                value={phone}
-                onChange={handlePhoneChange}
-                type="tel"
-                className="p-2 text-white bg-gray-800 rounded-md border border-primary-color focus:outline-none focus:ring-2 focus:ring-primary-color transition-all"
-                placeholder="Enter your 10-digit phone number"
-                aria-label="Edit phone"
-              />
-            ) : (
-              <p className="text-gray flex items-center gap-2">
-                <FiMapPin size={16} /> Phone: {phone || 'No phone set'}
-              </p>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        className="bg-sub-dark p-6 rounded-xl max-w-md mx-auto mt-20 shadow-2xl animate-fadeIn"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-      >
-        <h2 className="text-xl font-semibold text-white mb-4">Profile Image</h2>
-        <div className="relative group">
-          <img
-            src={currentProfileImage}
-            alt="Profile preview"
-            className="w-full h-auto rounded-lg mb-4"
-          />
-          <div className="shine-bg" />
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 relative z-10">
+        
+        {/* Left: Avatar */}
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative group w-32 h-32 rounded-full p-1 border border-white/10 bg-black/50">
+            <img 
+              src={formData.profileImage} 
+              alt={userName} 
+              className="w-full h-full rounded-full object-cover"
+            />
+            {/* Image Overlay (Only visible in edit mode OR hover) */}
+            <div 
+              onClick={() => isEditMode && fileInputRef.current.click()}
+              className={`absolute inset-0 rounded-full bg-black/60 flex items-center justify-center transition-opacity duration-300 cursor-pointer ${isEditMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            >
+              <FiCamera className="text-white opacity-80" size={24} />
+            </div>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={handleImageUpload} 
+              accept="image/*"
+              disabled={!isEditMode}
+            />
+          </div>
+          <div className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-mono tracking-wider uppercase">
+            Member
+          </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={handleImageUpload}
-            className="px-4 py-2 btn-primary flex items-center gap-2"
-          >
-            <FiCamera size={16} /> Change Image
-          </button>
-          <button
-            onClick={closeModal}
-            className="px-4 py-2 btn-danger flex items-center gap-2"
-          >
-            <FiX size={16} /> Close
-          </button>
+
+        {/* Right: Info & Bio */}
+        <div className="flex flex-col gap-6">
+          
+          {/* Notifications */}
+          {(error || success) && (
+            <div className={`text-sm px-4 py-2 rounded border ${error ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-green-500/10 border-green-500/20 text-green-400'}`}>
+              {error || success}
+            </div>
+          )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <StatItem 
+              icon={FiMail} 
+              label="Email" 
+              value={userEmail} 
+              isEditable={false} 
+            />
+            <StatItem 
+              icon={FiPhone} 
+              label="Phone" 
+              value={formData.phone} 
+              name="phone"
+              isEditable={isEditMode} 
+              onChange={handleChange}
+              placeholder="+91 00000 00000"
+            />
+            <StatItem 
+              icon={FiCalendar} 
+              label="Age" 
+              value={formData.age} 
+              name="age"
+              isEditable={isEditMode} 
+              onChange={handleChange}
+              placeholder="e.g. 21"
+            />
+             <StatItem 
+              icon={FiActivity} 
+              label="User ID" 
+              value={userId ? `...${userId.slice(-6)}` : 'N/A'} 
+              isEditable={false} 
+              mono
+            />
+          </div>
+
+          {/* Bio Section */}
+          <div className="pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 mb-3 text-gray-500">
+              <FiUser size={14} />
+              <span className="text-xs font-bold uppercase tracking-wider">About Me</span>
+            </div>
+            {isEditMode ? (
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Tell us a bit about yourself..."
+                className="w-full bg-[#151520] text-gray-200 text-sm p-4 rounded-lg border border-white/10 focus:border-purple-500/50 focus:outline-none resize-none transition-all placeholder-gray-600"
+              />
+            ) : (
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {formData.description || "No description provided yet."}
+              </p>
+            )}
+          </div>
         </div>
-      </Modal>
+
+      </div>
     </section>
   );
 };
 
+/* --- SUB-COMPONENTS for cleaner code --- */
+
+const StatItem = ({ icon: Icon, label, value, isEditable, onChange, name, placeholder, mono }) => (
+  <div className="bg-[#151520] p-3 rounded-lg border border-white/5 flex items-center gap-4">
+    <div className="p-2 rounded bg-white/5 text-gray-400">
+      <Icon size={16} />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">{label}</p>
+      {isEditable ? (
+        <input 
+          type="text" 
+          name={name}
+          value={value} 
+          onChange={onChange}
+          placeholder={placeholder}
+          className="w-full bg-transparent border-b border-gray-700 text-white text-sm pb-0.5 focus:border-purple-500 focus:outline-none placeholder-gray-700"
+        />
+      ) : (
+        <p className={`text-sm text-gray-200 truncate ${mono ? 'font-mono' : ''}`}>
+          {value || <span className="text-gray-700 italic">Not set</span>}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
 WelcomeSection.propTypes = {
   userName: PropTypes.string,
   userEmail: PropTypes.string,
-  userAge: PropTypes.string,
+  userAge: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   userPhone: PropTypes.string,
   userDescription: PropTypes.string,
   profileImage: PropTypes.string,
   userId: PropTypes.string,
-  onSearch: PropTypes.func,
 };
 
 WelcomeSection.defaultProps = {
-  userName: 'Your username',
-  userEmail: 'Your email',
-  userAge: '',
-  userPhone: '',
-  userDescription: '',
-  profileImage: '/public/user3.jpg',
-  userId: null,
-  onSearch: null,
+  userName: 'Guest User',
+  userEmail: 'No email',
+  profileImage: '', // Ensure you have a default placeholder in your parent or here
 };
 
 export default WelcomeSection;
