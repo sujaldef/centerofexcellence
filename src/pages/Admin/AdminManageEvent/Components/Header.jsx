@@ -66,7 +66,7 @@ const Header = ({ eventId }) => {
       message,
       poster: poster ? poster.name : null,
       type,
-      url: 'http://localhost:8000/notifications/',
+      url: 'https://centerofexcellence-1.onrender.com/notifications/',
     });
     dispatch(postNotification({ eventId, notificationData: { message, poster }, type }))
       .then((result) => {

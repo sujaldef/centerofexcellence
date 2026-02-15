@@ -27,7 +27,7 @@ const Login = () => {
         return;
       }
       try {
-        const response = await axios.post('http://localhost:8000/users/login', {
+        const response = await axios.post('https://centerofexcellence-1.onrender.com/users/login', {
           identifier,
           password,
         });
@@ -37,18 +37,18 @@ const Login = () => {
         }
         localStorage.setItem('token', access_token);
         localStorage.setItem('userId', user_id);
-       dispatch(setUserFromToken({ token: access_token, userId: user_id }));
+        dispatch(setUserFromToken({ token: access_token, userId: user_id }));
 
-// Redirect based on admin check
-if (
-  (identifier === '1' && password === '1') || // Login mode check
-  (email === '1' && password === '1')         // Signup mode check
-) {
-  window.location.href = 'http://localhost:5174/admin/dashboard';
+        // Redirect based on admin check
+        if (
+          (identifier === '1' && password === '1') || // Login mode check
+          (email === '1' && password === '1')         // Signup mode check
+        ) {
+          window.location.href = 'http://localhost:5174/admin/dashboard';
 
-} else {
-  navigate('/student/dashboard');
-}
+        } else {
+          navigate('/student/dashboard');
+        }
 
       } catch (err) {
         console.error('Login error:', err);
@@ -66,7 +66,7 @@ if (
         return;
       }
       try {
-        const response = await axios.post('http://localhost:8000/users', {
+        const response = await axios.post('http:///users', {
           username,
           email,
           password,
@@ -98,21 +98,19 @@ if (
         <div className="flex gap-4">
           <button
             onClick={() => setFormMode('Login')}
-            className={`btn-secondary ${
-              formMode === 'Login'
+            className={`btn-secondary ${formMode === 'Login'
                 ? 'bg-[var(--primary-color)] text-white'
                 : 'text-gray hover:bg-gray-700'
-            }`}
+              }`}
           >
             Login
           </button>
           <button
             onClick={() => setFormMode('Sign Up')}
-            className={`btn-secondary ${
-              formMode === 'Sign Up'
+            className={`btn-secondary ${formMode === 'Sign Up'
                 ? 'bg-[var(--primary-color)] text-white'
                 : 'text-gray hover:bg-gray-700'
-            }`}
+              }`}
           >
             Sign Up
           </button>

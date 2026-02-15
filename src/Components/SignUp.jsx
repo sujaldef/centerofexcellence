@@ -14,7 +14,7 @@ const SignUp = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:8000/users', {
+      const response = await axios.post('https://centerofexcellence-1.onrender.com/users', {
         username,
         email,
         password,
