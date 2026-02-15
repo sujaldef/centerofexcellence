@@ -1,46 +1,69 @@
-// src/components/AuthInitializer.js
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { fetchUserById, setUserFromToken } from '../redux/slices/userSlice';
-import { decodeToken, isTokenExpired } from '../utils/decodeToken';
+// src/components/AuthInitializer.jsx
+
+import React, { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { fetchUserById, setUserFromToken, logout } from "../redux/slices/userSlice";
+import { jwtDecode } from "jwt-decode";
 
 const AuthInitializer = ({ children }) => {
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userId, token } = useSelector((state) => state.user || { userId: null, token: null });
-  const storedToken = localStorage.getItem('token');
-  const storedUserId = localStorage.getItem('userId');
+
+  // prevents running twice (important for React strict mode)
+  const initialized = useRef(false);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (storedToken && storedUserId && !token) {
-        console.log('Restoring auth:', { storedToken, storedUserId });
-        try {
-          const decoded = decodeToken(storedToken);
-          console.log('Decoded token:', decoded);
-          if (decoded && !isTokenExpired(decoded.exp)) {
-            dispatch(setUserFromToken({ token: storedToken, userId: storedUserId }));
-            console.log('Fetching user with ID:', storedUserId);
-            await dispatch(fetchUserById(storedUserId)).unwrap();
-          } else {
-            console.log('Invalid or expired token:', decoded);
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            dispatch({ type: 'user/logout' });
-            navigate('/login');
-          }
-        } catch (error) {
-          console.error('Auth initialization error:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          dispatch({ type: 'user/logout' });
-          navigate('/login');
+
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const initAuth = async () => {
+
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+
+      // nothing stored → skip
+      if (!token || !userId) return;
+
+      try {
+
+        // decode JWT
+        const decoded = jwtDecode(token);
+
+        // check expiry
+        const now = Date.now() / 1000;
+        if (!decoded?.exp || decoded.exp < now) {
+          throw new Error("Token expired");
+        }
+
+        // restore redux state
+        dispatch(setUserFromToken({ token, userId }));
+
+        // fetch user profile
+        await dispatch(fetchUserById(userId)).unwrap();
+
+      } catch (err) {
+
+        console.error("Auth restore failed:", err);
+
+        // cleanup broken login
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        dispatch(logout());
+
+        // redirect only if not already on login page
+        if (window.location.pathname !== "/login") {
+          navigate("/login");
         }
       }
     };
-    initializeAuth();
-  }, [dispatch, navigate, storedToken, storedUserId, token]);
+
+    initAuth();
+
+  }, [dispatch, navigate]);
 
   return <>{children}</>;
 };

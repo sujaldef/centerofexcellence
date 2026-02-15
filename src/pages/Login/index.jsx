@@ -31,7 +31,12 @@ const Login = () => {
           return;
         }
   
-        await dispatch(login({ identifier, password })).unwrap();
+        const result = await dispatch(login({ identifier, password })).unwrap();
+
+dispatch(setUserFromToken({
+  token: result.access_token,
+  userId: result.user_id
+}));
 
         // admin check example (optional)
         if (identifier === '1' && password === '1') {
