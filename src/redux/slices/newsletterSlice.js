@@ -3,7 +3,7 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
 // Base URL for the API (adjusted to match your FastAPI server URL)
-const API_URL = 'http://localhost:8000/newsletter';
+const API_URL = 'https://centerofexcellence-1.onrender.com/newsletter';
 
 // Configure Axios with timeout and retries
 const axiosInstance = axios.create({

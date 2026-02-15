@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/events';
+const API_BASE_URL = 'https://centerofexcellence-1.onrender.com/events';
 
 export const fetchEvents = createAsyncThunk(
   'events/fetchEvents',

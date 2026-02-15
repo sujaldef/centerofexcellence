@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const API_BASE_URL = 'http://localhost:8000/users';
+const API_BASE_URL = 'https://centerofexcellence-1.onrender.com/users';
 
 // Thunk to login and get JWT token and user_id
 export const login = createAsyncThunk(
