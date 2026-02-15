@@ -14,16 +14,12 @@ app = FastAPI(title="Center of Excellence API")
 # ✅ Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5171",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://coe-47billion.vercel.app",
-    ],
+    allow_origins=["*"],   # <-- simplest safe for portfolio
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Routers
 app.include_router(user_router, tags=["users"])
