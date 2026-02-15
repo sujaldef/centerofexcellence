@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserFromToken } from '../../redux/slices/userSlice';
 import axios from 'axios';
+import { login } from '../../redux/slices/userSlice';
 
 const Login = () => {
   const [formMode, setFormMode] = useState('Login');
@@ -20,77 +21,69 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
-    if (formMode === 'Login') {
-      if (!identifier || !password) {
-        setError('Please fill in all fields');
-        return;
-      }
-      try {
-        const response = await axios.post('https://centerofexcellence-1.onrender.com/users/login', {
-          identifier,
-          password,
-        });
-        const { access_token, user_id } = response.data;
-        if (!access_token || !user_id) {
-          throw new Error('Missing token or user ID in response');
+  
+    try {
+      // LOGIN MODE
+      if (formMode === 'Login') {
+  
+        if (!identifier || !password) {
+          setError('Please fill in all fields');
+          return;
         }
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('userId', user_id);
-        dispatch(setUserFromToken({ token: access_token, userId: user_id }));
+  
+        await dispatch(login({ identifier, password })).unwrap();
 
-        // Redirect based on admin check
-        if (
-          (identifier === '1' && password === '1') || // Login mode check
-          (email === '1' && password === '1')         // Signup mode check
-        ) {
-          window.location.href = 'http://localhost:5174/admin/dashboard';
-
+        // admin check example (optional)
+        if (identifier === '1' && password === '1') {
+          navigate('/admin/dashboard');   // ✅ no localhost
         } else {
           navigate('/student/dashboard');
         }
-
-      } catch (err) {
-        console.error('Login error:', err);
-        console.log('Full error response:', err.response?.data);
-        const errorMessage = err.response?.data?.detail
-          ? Array.isArray(err.response.data.detail)
-            ? err.response.data.detail.map(e => e.msg).join(', ')
-            : err.response.data.detail
-          : err.message || 'Login failed';
-        setError(errorMessage);
+  
       }
-    } else {
-      if (!username || !email || !password) {
-        setError('Please fill in all fields');
-        return;
-      }
-      try {
-        const response = await axios.post('http:///users', {
-          username,
-          email,
-          password,
-        });
-        const { access_token, user_id } = response.data;
-        if (!access_token || !user_id) {
-          throw new Error('Missing token or user ID in response');
+  
+      // SIGNUP MODE
+      else {
+  
+        if (!username || !email || !password) {
+          setError('Please fill in all fields');
+          return;
         }
+  
+        // ✅ correct backend URL
+        const response = await axios.post(
+          'https://centerofexcellence-1.onrender.com/users',
+          { username, email, password }
+        );
+  
+        const { access_token, user_id } = response.data;
+  
         localStorage.setItem('token', access_token);
         localStorage.setItem('userId', user_id);
-        dispatch(setUserFromToken({ token: access_token, userId: user_id }));
+  
+        dispatch(setUserFromToken({
+          token: access_token,
+          userId: user_id
+        }));
+  
         navigate('/student/dashboard');
-      } catch (err) {
-        console.error('Signup error:', err);
-        console.log('Full error response:', err.response?.data);
-        const errorMessage = err.response?.data?.detail
-          ? Array.isArray(err.response.data.detail)
-            ? err.response.data.detail.map(e => e.msg).join(', ')
-            : err.response.data.detail
-          : err.message || 'Sign up failed';
-        setError(errorMessage);
       }
+  
+    } catch (err) {
+  
+      console.error('Auth error:', err);
+  
+      const message =
+      err?.response?.data?.detail
+        ? Array.isArray(err.response.data.detail)
+          ? err.response.data.detail.map(e => e.msg).join(', ')
+          : err.response.data.detail
+        : err.message || 'Authentication failed';
+    
+      setError(message);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-4">
