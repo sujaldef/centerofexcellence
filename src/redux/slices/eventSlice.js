@@ -80,7 +80,7 @@ export const fetchSpeakers = createAsyncThunk(
     }
   }
 );
-
+ 
 export const fetchNotifications = createAsyncThunk(
   'events/fetchNotifications',
   async (eventId, { rejectWithValue }) => {
