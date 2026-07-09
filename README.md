@@ -1,9 +1,9 @@
 # centerofexcellence
 
 ![React](https://img.shields.io/badge/-React-blue?logo=react&logoColor=white)
-
+Built by [@akhild24](https://github.com/akhild24) and [@sujaldef](https://github.com/sujaldef)
 ## 📝 Description
-
+ 
 The Center of Excellence (CoE) platform is a scalable, full-stack solution designed to streamline knowledge sharing and collaboration within an organization. Built with a modern tech stack including React, Tailwind CSS, Redux, FastAPI, and MongoDB, the platform offers a responsive and intuitive user experience. Role-based access control ensures that administrators and users have tailored dashboards and permissions. Key features incude comprehensive event management, allowing for the creation and promotion of internal and external events; a blog publishing system for disseminating information and insights; real-time notifications to keep users informed of important updates; and robust, JWT-based OAuth2 authentication for secure access and data protection. This platform empowers organizations to centralize expertise, foster innovation, and drive continuous improvement.
 
 ## ✨ Features
